@@ -1,59 +1,41 @@
 package eu.newton;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import eu.newton.ui.Plotter;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
 import java.math.BigDecimal;
-import java.util.function.Function;
 
+public class Main extends Application {
 
-public class Main {
+    public void start(Stage primaryStage) {
+        Plotter root = new Plotter(new FunctionController(), -5, 5, -5, 5);
 
-    public static void main(String[] args) {
+        // Jump not detected
+        //root.plot(x -> 4 * Math.abs(x) / x);
 
-        BetterParser parser = new BetterParser();
-        final String f = "x^sin(x)^x";
+        // Discontinuity detected
+        //root.plot(x -> 1 / (x));
 
+        // Discontinuity detected
+        //root.plot(x -> Math.pow(Math.sin(2 * x), x));
 
-        BigDecimal result = null;
-        try {
-            IMathFunction plzdontdothisathome = parser.parse(f);
-            try {
-                //result = plzdontdothisathome.differentiate(k(2), 1);
-                result = plzdontdothisathome.evaluate(k(2.0));
-            } catch (NumberFormatException | ArithmeticException ex) {
-                System.err.println("Are you retarded ? ");
-                System.err.println(ex.getMessage());
-            } catch (Exception ex) {
-                System.err.println("Stop it java");
-                System.err.println(ex.getMessage());
-                ex.printStackTrace();
+        root.plot(x -> Math.tan(x));
 
-            }
-        } catch (Exception ex) {
-            System.err.println("Good job, you won. Now fuck off ");
-            System.err.println(ex.getMessage());
-
-
-        }
-
-        System.out.println("RESULT: " + result);
-
+        Scene scene = new Scene(root, 1280, 720);
+        primaryStage.setTitle("Plotter");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
-
-
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     public static BigDecimal k(double d) {
         return BigDecimal.valueOf(d);
     }
-
-
-
-
-//    public static BigDecimal precise(BigDecimal a, BigDecimal b) {
-//        return a.divide(b, 1000, BigDecimal.ROUND_CEILING);
-//    }
 
 }
 
