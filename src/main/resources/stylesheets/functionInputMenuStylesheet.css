@@ -1,0 +1,42 @@
+
+.addFunction {
+    -fx-background-color: #a4a4a4;
+}
+
+.clear {
+    -fx-background-color: #bc0000;
+    -fx-font-weight: bold;
+}
+
+.hide {
+    -fx-background-color: #a4a4a4;
+}
+
+.leftOptionsBar {
+    -fx-spacing: 15;
+    -fx-alignment: center-left;
+    -fx-padding: 10;
+}
+
+.optionsBar {
+    -fx-pref-height: 45px;
+    -fx-background-color: #d3d3d3;
+    -fx-border-width: 0px 0px 2px 0px;
+    -fx-border-style: solid;
+    -fx-border-color: #bebebe;
+    -fx-alignment: center-left;
+    -fx-spacing: 240px;
+}
+
+.functionsScrollPane {
+    -fx-vbar-policy: never;
+    -fx-fit-to-width: true;
+}
+
+.functionInputMenu {
+    -fx-max-width: 410px;
+    -fx-border-style: solid;
+    -fx-border-color: #bebebe;
+    -fx-border-width: 0px 2px 0px 0px;
+    -fx-background-color: #ffffff;
+}
