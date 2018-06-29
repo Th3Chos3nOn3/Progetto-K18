@@ -32,7 +32,10 @@ public final class FunctionManager implements IFunctionManager {
             functionsTable.put(index, f);
         }
 
+        // DEBUG
         viewTable();
+
+        notifyObservers();
 
         return f != null;
     }
@@ -41,7 +44,10 @@ public final class FunctionManager implements IFunctionManager {
     public boolean remove(int index) {
         boolean b = functionsTable.remove(index) != null;
 
+        // DEBUG
         viewTable();
+
+        notifyObservers();
 
         return b;
     }
@@ -50,7 +56,10 @@ public final class FunctionManager implements IFunctionManager {
     public void clear() {
         functionsTable.clear();
 
+        // DEBUG
         viewTable();
+
+        notifyObservers();
     }
 
     @Override

@@ -123,76 +123,77 @@ class FunctionSlotManager extends VBox {
 
             getChildren().addAll(prompt, functionInput, derivativeButton, delete);
         }
+
+        private class DerivativeButton extends HBox{
+            private int index;
+            private JFXButton increment, decrement;
+            private VBox modifier;
+            private JFXButton computeDerivative;
+            private Label indexLabel;
+
+            DerivativeButton() {
+                graphicInit();
+
+                index = 1;
+
+                increment.setOnAction(e -> {
+                    if (index >= 99) {
+                        // Do nothing
+                    } else {
+                        indexLabel.setText(String.valueOf(++index));
+                    }
+                });
+
+                decrement.setOnAction(e -> {
+                    if (index <= 1) {
+                        // Do Nothing
+                    } else {
+                        indexLabel.setText(String.valueOf(--index));
+                    }
+                });
+
+                computeDerivative.setOnAction(e -> {
+                    // TODO: to be implemented when symbolic derivative is added;
+                });
+
+            }
+
+            private void graphicInit() {
+                increment = new JFXButton("▴");
+
+                decrement = new JFXButton("▾");
+
+                modifier = new VBox(increment, decrement);
+                modifier.setStyle(
+                        "-fx-alignment: center;" +
+                                "-fx-border-color: darkgreen;" +
+                                "-fx-border-style: solid;" +
+                                "-fx-border-width: 0px, 0px, 0px, 1px;"
+                );
+
+                computeDerivative = new JFXButton("Dⁿf ");
+                computeDerivative.setStyle(
+                        "-fx-pref-height: 50px;"
+                );
+
+                indexLabel = new Label(String.valueOf(index));
+                indexLabel.setStyle(
+                        "-fx-font-weight: bold;" +
+                                "-fx-pref-width: 20px;"
+                );
+
+                setStyle(
+                        "-fx-alignment: center;" +
+                                "-fx-background-color: green;" +
+                                "-fx-border-radius: 9;" +
+                                "-fx-border-width: 10px;" +
+                                "-fx-border-color: white;" +
+                                "-fx-background-radius: 20;"
+                );
+
+                getChildren().addAll(computeDerivative, indexLabel, modifier);
+            }
+        }
     }
 
-    private class DerivativeButton extends HBox{
-        private int index;
-        private JFXButton increment, decrement;
-        private VBox modifier;
-        private JFXButton computeDerivative;
-        private Label indexLabel;
-
-        DerivativeButton() {
-            graphicInit();
-
-            index = 1;
-
-            increment.setOnAction(e -> {
-                if (index >= 99) {
-                    // Do nothing
-                } else {
-                    indexLabel.setText(String.valueOf(++index));
-                }
-            });
-
-            decrement.setOnAction(e -> {
-                if (index <= 1) {
-                    // Do Nothing
-                } else {
-                    indexLabel.setText(String.valueOf(--index));
-                }
-            });
-
-            computeDerivative.setOnAction(e -> {
-                // TODO: to be implemented when symbolic derivative is added;
-            });
-
-        }
-
-        private void graphicInit() {
-            increment = new JFXButton("▴");
-
-            decrement = new JFXButton("▾");
-
-            modifier = new VBox(increment, decrement);
-            modifier.setStyle(
-                    "-fx-alignment: center;" +
-                            "-fx-border-color: darkgreen;" +
-                            "-fx-border-style: solid;" +
-                            "-fx-border-width: 0px, 0px, 0px, 1px;"
-            );
-
-            computeDerivative = new JFXButton("Dⁿf ");
-            computeDerivative.setStyle(
-                    "-fx-pref-height: 50px;"
-            );
-
-            indexLabel = new Label(String.valueOf(index));
-            indexLabel.setStyle(
-                    "-fx-font-weight: bold;" +
-                            "-fx-pref-width: 20px;"
-            );
-
-            setStyle(
-                    "-fx-alignment: center;" +
-                            "-fx-background-color: green;" +
-                            "-fx-border-radius: 9;" +
-                            "-fx-border-width: 10px;" +
-                            "-fx-border-color: white;" +
-                            "-fx-background-radius: 20;"
-            );
-
-            getChildren().addAll(computeDerivative, indexLabel, modifier);
-        }
-    }
 }

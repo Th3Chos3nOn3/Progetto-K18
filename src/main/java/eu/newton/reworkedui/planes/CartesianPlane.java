@@ -8,6 +8,7 @@ import javafx.scene.Group;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
 /**
@@ -15,8 +16,10 @@ import javafx.scene.shape.Line;
  */
 public class CartesianPlane extends Pane implements IObserver {
 
-    private static final int STD_POINT_DENSITY = 500;
+    private static final int STD_POINT_DENSITY = 200;
     private static final double STD_TICK_DENSITY = 10;
+    private static int CHECK_THRESHOLD = 10;
+    private static double MAX_ANGLE = Math.atan(Double.MIN_VALUE);
 
     private final IFunctionManager functionManager;
     private Group sheet;
@@ -31,13 +34,16 @@ public class CartesianPlane extends Pane implements IObserver {
         this(functionManager, xLow, xHi, yLow, yHi, STD_TICK_DENSITY, STD_POINT_DENSITY);
     }
 
-    public CartesianPlane(
-            IFunctionManager functionManager,
-            double xLow, double xHi,
-            double yLow, double yHi,
-            double axisTickDensity,
-            int pointsDensity) {
-
+    /**
+     * @param functionManager    math functions controller
+     * @param xLow  x axis lower bound
+     * @param xHi   x axis upper bound
+     * @param yLow  y axis lower bound
+     * @param yHi   y axis upper bound
+     * @param axisTickDensity   number of axis ticks
+     * @param pointsDensity     number of drawn points for each canvas
+     */
+    public CartesianPlane(IFunctionManager functionManager, double xLow, double xHi, double yLow, double yHi, double axisTickDensity, int pointsDensity) {
         if ((xLow > xHi) || (yLow > yHi)) {
             throw new AssertionError("Low(s) must be less than Hi(s)");
         }
@@ -75,74 +81,92 @@ public class CartesianPlane extends Pane implements IObserver {
     }
 
     /**
-     * Plot all the functions managed by the functionManager
+     * Plot a dot on the plane
+     * @param x x-plane coordinate
+     * @param y y-plane coordinate
+     */
+    public void plot(double x, double y) {
+        Circle circle = new Circle(mapToPaneX(x), mapToPaneY(y), 4, Color.GREEN);
+
+        sheet.getChildren().add(circle);
+    }
+
+    /**
+     * Plot all controller managed functions
      */
     public void plot() {
-        double step0 = (Math.abs(xAxis.getUpperBound()) + Math.abs(xAxis.getLowerBound())) / pointDensity;
-        double maxStep = step0;         // 1/500 larghezza grafico
-        double minStep = step0 / 100;   // 1/5000 larghezza grafico
-        double disc = maxStep * 10;     // 5*maxStep<disc<10*maxStep; disc -> discrimina tra discontinuità e non discontinuità
+        double step = (Math.abs(xAxis.getUpperBound()) + Math.abs(xAxis.getLowerBound())) / pointDensity;
 
         for (MathematicalFunction f : functionManager.getFunctions()) {
-            double xa = xAxis.getLowerBound();
-
             if (f != null) {
+                double previousX = xAxis.getLowerBound();
+                double previousY = f.evaluate(previousX);
 
-                double ya, dya, xb, yb, dyb;
-                double newStep = step0;
-                while (xa < xAxis.getUpperBound()) {
-                    xb = xa + newStep;
-                    ya = f.evaluate(xa);
-                    dya = f.evaluate(xa);
-                    yb = f.evaluate(xb);
-                    dyb = f.evaluate(xb);
+                for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
+                    if (!isVertical(previousX, previousY, x, f.evaluate(x))) {
+                        plotSegment(previousX, previousY, x, f.evaluate(x), Color.RED);
+                    } else {
 
-                    double distab = Math.sqrt(Math.pow(xa - xb, 2) + Math.pow(ya - yb, 2));
+                        for (int i = 0; i < CHECK_THRESHOLD; i++) {
+                            double[] midPoints = splitSegment(previousX, x, i + 2);
 
-                    if (distab < disc) plotSegment(xa, ya, xb, yb, Color.RED);
+                            if (!isVertical(f, midPoints)) {
+                                // Probably not a discontinuity
+                                plot(f, midPoints, Color.RED);
+                                break;
+                            }
 
-                    newStep = this.computeNewStep(dya,dyb,maxStep,minStep,newStep);
-                    xa = xb;
+                            // May be a discontinuity! Don't plot the segment
+                        }
+                    }
+
+                    previousX = x;
+                    previousY = f.evaluate(x);
                 }
             }
         }
     }
 
-    private double computeNewStep(double dya, double dyb, double maxStep, double minStep, double oldStep){
-        double newStep = 0;
-
-        dya = Math.abs(dya);
-        dyb = Math.abs(dyb);
-
-        //scambia dya con dyb nel caso dya < dyb
-        if (dya < dyb) {
-            double temp = dya;
-
-            dya = dyb;
-            dyb = temp;
+    private double[] splitSegment(double x0, double x1, int splits) {
+        if (x0 >= x1) {
+            throw new AssertionError("x0 should be less than x1");
         }
 
-        //da qui in poi dya sempre maggiore di dyb
-        if (dya!=0 && dyb!=0) {
-            newStep = oldStep*(dyb/dya);
+        double[] points = new double[splits];
+        double step = (x1 - x0) / splits;
 
-            if (newStep < minStep) {
-                newStep = minStep;
-            } else if (newStep > maxStep) {
-                newStep = maxStep;
-            }
-
-        } else {
-
-            if (dya==0 && dyb==0) newStep = maxStep;
-            if (dya==0 && dyb!=0) newStep = maxStep;
-            if (dya!=0 && dyb==0) newStep = minStep;
-
+        for (int i = 0; i < splits; i++) {
+            points[i] = x0 + step * (i + 1);
         }
 
-        return newStep;
+        return points;
     }
 
+    /**
+     * Plot a math function f given an array of points
+     * @param f math function to be plotted
+     * @param points    points to be evaluated by f
+     * @param color function's color
+     */
+    private void plot(MathematicalFunction f, double[] points, Color color) {
+        if (points.length < 2) {
+            throw new AssertionError("At least 2 points");
+        }
+
+        for (int i = 0; i < points.length - 1; i++) {
+            plotSegment(points[i], f.evaluate(points[i]), points[i + 1], f.evaluate(points[i + 1]), color);
+        }
+
+    }
+
+    /**
+     * Plot the segment AB
+     * @param x0    A(x0, y0)
+     * @param y0    A(x0, y0)
+     * @param x1    B(x1, y1)
+     * @param y1    B(x1, y1)
+     * @param color segment's color
+     */
     private void plotSegment(double x0, double y0, double x1, double y1, Color color) {
         Line line = new Line(mapToPaneX(x0), mapToPaneY(y0), mapToPaneX(x1), mapToPaneY(y1));
         line.setStrokeWidth(2);
@@ -150,24 +174,87 @@ public class CartesianPlane extends Pane implements IObserver {
         sheet.getChildren().add(line);
     }
 
+    /**
+     * Determine if a given segment AB may be considered vertical
+     * @param x0    A(x0, y0)
+     * @param y0    A(x0, y0)
+     * @param x1    B(x1, y1)
+     * @param y1    B(x1, y1)
+     * @return  true if it is vertical;
+     */
+    private boolean isVertical(double x0, double y0, double x1, double y1) {
+        if (y0 == y1)
+            return false;
+
+        double angle = Math.abs(Math.atan((y1 - y0) / (x1 - x0)));
+
+        // TODO: find a suitable proportional rule for angle offset
+        double step = Math.abs(x1 - x0);
+        double angleOffset = (step < 1? 1 / Math.pow(step, 2): Math.pow(step, 3));
+        return !(MAX_ANGLE <= angle) || !(angle <= Math.atan(angleOffset));
+    }
+
+    /**
+     * Determine if a given math function may be considered vertical
+     * on a given set of points
+     * @param f math function
+     * @param points    points to be evaluated by f
+     * @return  true if it is vertical
+     */
+    private boolean isVertical(MathematicalFunction f, double[] points) {
+        double prevX = points[0];
+        double prevY = f.evaluate(prevX);
+
+        for (int i = 1; i < points.length; i++) {
+            if (isVertical(prevX, prevY, points[i], f.evaluate(points[i]))) {
+                return true;
+            }
+
+            prevX = points[i];
+            prevY = f.evaluate(prevX);
+        }
+
+        return false;
+    }
+
+    /**
+     * Map a x-plane coordinate to a x-pane coordinate
+     * @param cartesianX    x-plane coordinate
+     * @return  x-pane coordinates
+     */
     private double mapToPaneX(double cartesianX) {
         double convertedX = cartesianX / getAxisRange(xAxis) * getWidth();
 
         return convertedX + getWidth() / 2;
     }
 
+    /**
+     * Map a y-plane coordinate to a y-pane coordinate
+     * @param cartesianY    y-plane coordinate
+     * @return  y-pane coordinates
+     */
     private double mapToPaneY(double cartesianY) {
         double convertedY = - (cartesianY / getAxisRange(yAxis) * getHeight());
 
         return convertedY + getHeight() / 2;
     }
 
+    /**
+     * Map a x-pane coordinate to a x-plane coordinate
+     * @param paneX x-pane coordinate
+     * @return  x-plane coordinate
+     */
     private double mapToCartesianX(double paneX) {
         double centeredX = paneX - getWidth() / 2;
 
         return centeredX / getWidth() * getAxisRange(xAxis);
     }
 
+    /**
+     * Map a y-pane coordinate to a y-plane coordinate
+     * @param paneY y-pane coordinate
+     * @return  y-plane coordinate
+     */
     private double mapToCartesianY(double paneY) {
         double centeredY = paneY - getHeight() / 2;
 
@@ -178,6 +265,9 @@ public class CartesianPlane extends Pane implements IObserver {
         return axis.getUpperBound() - axis.getLowerBound();
     }
 
+    /**
+     * Refresh the math function graph drawing canvas
+     */
     private void sheetRefresh() {
         sheet.getChildren().clear();
         plot();

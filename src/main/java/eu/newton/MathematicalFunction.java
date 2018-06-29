@@ -14,7 +14,7 @@ public final class MathematicalFunction {
     }
 
     public double evaluate(double x) {
-        return f.evaluate(new BigDecimal(x)).doubleValue();
+        return f.evaluate(BigDecimal.valueOf(x)).doubleValue();
     }
 
     @Override
