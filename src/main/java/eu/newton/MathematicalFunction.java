@@ -1,6 +1,7 @@
 package eu.newton;
 
 import javax.script.ScriptException;
+import java.math.BigDecimal;
 
 public final class MathematicalFunction {
 
@@ -12,10 +13,9 @@ public final class MathematicalFunction {
         this.function = function;
     }
 
-
-
-
-
+    public double evaluate(double x) {
+        return f.evaluate(new BigDecimal(x)).doubleValue();
+    }
 
     @Override
     public String toString() {

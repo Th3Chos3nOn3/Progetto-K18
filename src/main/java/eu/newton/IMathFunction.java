@@ -7,7 +7,6 @@ import java.util.stream.IntStream;
 
 import static eu.newton.Main.k;
 
-
 @FunctionalInterface
 public interface IMathFunction extends IDifferentiable<BigDecimal> {
 

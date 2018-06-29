@@ -1,7 +1,8 @@
-package eu.newton.ui.functioninput;
+package eu.newton.reworkedui.functioninput;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXScrollPane;
+import eu.newton.reworkedui.functionmanager.IFunctionManager;
 import javafx.animation.TranslateTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,12 +21,14 @@ public class FunctionInputMenu extends VBox {
     private FunctionSlotManager functionSlotManager;
     private ScrollPane functionsScrollPane;
 
-    public FunctionInputMenu() {
+    public FunctionInputMenu(IFunctionManager functionManager) {
+        functionSlotManager = new FunctionSlotManager(functionManager);
+
         init();
 
         addFunction.setOnAction(e -> functionSlotManager.newSlot());
 
-        clear.setOnAction(e -> functionSlotManager.init());
+        clear.setOnAction(e -> functionSlotManager.reset());
 
         hide.setOnAction(e -> {
             TranslateTransition t = new TranslateTransition(new Duration(250), this);
@@ -83,7 +86,7 @@ public class FunctionInputMenu extends VBox {
                         "-fx-spacing: 240px;"
         );
 
-        functionSlotManager = new FunctionSlotManager();
+
 
         functionsScrollPane = new ScrollPane(functionSlotManager);
         JFXScrollPane.smoothScrolling(functionsScrollPane);

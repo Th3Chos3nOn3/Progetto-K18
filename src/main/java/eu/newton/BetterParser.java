@@ -28,8 +28,6 @@ public class BetterParser implements IParser {
         IMathFunction f = theTrueParsing(list);
 
         return f;
-
-
     }
 
 

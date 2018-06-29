@@ -1,10 +1,9 @@
-package eu.newton.ui;
+package eu.newton.reworkedui;
 
 import com.jfoenix.controls.JFXButton;
-import eu.newton.FunctionController;
-import eu.newton.ui.functioninput.FunctionInputMenu;
-import eu.newton.ui.planes.CartesianPlane;
-import eu.unipv.projectk.functions.FooMathFunction;
+import eu.newton.reworkedui.functioninput.FunctionInputMenu;
+import eu.newton.reworkedui.functionmanager.IFunctionManager;
+import eu.newton.reworkedui.planes.CartesianPlane;
 import javafx.animation.*;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -12,16 +11,18 @@ import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
 public class Plotter extends StackPane {
-    private final FunctionController functionController;
+
+    private final IFunctionManager functionController;
     private final FunctionInputMenu functionInputMenu;
     private final CartesianPlane cartesianPlane;
 
     private JFXButton show;
     private Label functionTextPopup;
+    private SequentialTransition fadePopupAnimation;
 
-    public Plotter(FunctionController functionController, double xLow, double xHi, double yLow, double yHi) {
+    public Plotter(IFunctionManager functionController, double xLow, double xHi, double yLow, double yHi) {
         this.functionController = functionController;
-        functionInputMenu = new FunctionInputMenu();
+        functionInputMenu = new FunctionInputMenu(functionController);
         cartesianPlane = new CartesianPlane(functionController, xLow, xHi, yLow, yHi);
 
         graphicInit();
@@ -34,23 +35,11 @@ public class Plotter extends StackPane {
             t.play();
         });
 
-        Timeline waiting = new Timeline(new KeyFrame(Duration.seconds(3)));
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1), functionTextPopup);
-        fadeTransition.setFromValue(1);
-        fadeTransition.setToValue(0);
-        SequentialTransition fade = new SequentialTransition(functionTextPopup, waiting, fadeTransition);
-
-        functionTextPopup.setVisible(false);
         functionTextPopup.textProperty().bind(functionInputMenu.getSelectedSlotText());
         functionTextPopup.textProperty().addListener((a) -> {
             functionTextPopup.setVisible(true);
-            fade.playFromStart();
+            fadePopupAnimation.playFromStart();
         });
-    }
-
-    public void plot(FooMathFunction f) {
-        cartesianPlane.addFunction(f);
-        cartesianPlane.plot();
     }
 
     private void graphicInit() {
@@ -73,10 +62,19 @@ public class Plotter extends StackPane {
                         "-fx-alignment: center;" +
                         "-fx-font-style: oblique;"
         );
+
         StackPane.setAlignment(functionTextPopup, Pos.BOTTOM_CENTER);
+
         functionTextPopup.setTranslateY(-30);
+        functionTextPopup.setVisible(false);
 
         StackPane.setAlignment(functionInputMenu, Pos.TOP_LEFT);
+
+        Timeline waiting = new Timeline(new KeyFrame(Duration.seconds(3)));
+        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1), functionTextPopup);
+        fadeTransition.setFromValue(1);
+        fadeTransition.setToValue(0);
+        fadePopupAnimation = new SequentialTransition(functionTextPopup, waiting, fadeTransition);
 
         getChildren().addAll(cartesianPlane, functionInputMenu, show, functionTextPopup);
     }
