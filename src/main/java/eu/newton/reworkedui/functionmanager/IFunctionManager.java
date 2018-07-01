@@ -1,10 +1,8 @@
 package eu.newton.reworkedui.functionmanager;
 
-import eu.newton.MathematicalFunction;
-import eu.newton.api.IDifferentiable;
+import eu.newton.GraphicMathFunction;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Must be implemented in order to manage functions through GUI
@@ -35,5 +33,5 @@ public interface IFunctionManager extends IObservable {
      * Get all managed functions
      * @return  all managed functions
      */
-    Collection<MathematicalFunction> getFunctions();
+    Collection<GraphicMathFunction> getFunctions();
 }

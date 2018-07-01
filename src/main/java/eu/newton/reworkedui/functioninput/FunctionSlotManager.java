@@ -153,7 +153,7 @@ class FunctionSlotManager extends VBox {
                 });
 
                 computeDerivative.setOnAction(e -> {
-                    // TODO: to be implemented when symbolic derivative is added;
+                    FunctionSlotManager.this.newSlot();
                 });
 
             }

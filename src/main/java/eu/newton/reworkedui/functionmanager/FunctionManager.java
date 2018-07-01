@@ -1,6 +1,6 @@
 package eu.newton.reworkedui.functionmanager;
 
-import eu.newton.MathematicalFunction;
+import eu.newton.GraphicMathFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +9,7 @@ import java.util.List;
 
 public final class FunctionManager implements IFunctionManager {
 
-    private HashMap<Integer, MathematicalFunction> functionsTable;
+    private HashMap<Integer, GraphicMathFunction> functionsTable;
     private List<IObserver> observers;
 
     public FunctionManager() {
@@ -20,10 +20,10 @@ public final class FunctionManager implements IFunctionManager {
     @Override
     public boolean add(int index, String function) {
 
-        MathematicalFunction f = null;
+        GraphicMathFunction f = null;
 
         try {
-           f = new MathematicalFunction(function);
+           f = new GraphicMathFunction(function);
         } catch (Exception e) {
             System.err.println("ERROR: Unable to parse \"" + function + "\"");
         }
@@ -63,7 +63,7 @@ public final class FunctionManager implements IFunctionManager {
     }
 
     @Override
-    public Collection<MathematicalFunction> getFunctions() {
+    public Collection<GraphicMathFunction> getFunctions() {
         return functionsTable.values();
     }
 

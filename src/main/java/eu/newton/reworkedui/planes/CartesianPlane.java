@@ -1,8 +1,9 @@
 package eu.newton.reworkedui.planes;
 
-import eu.newton.MathematicalFunction;
+import eu.newton.GraphicMathFunction;
 import eu.newton.reworkedui.functionmanager.IFunctionManager;
 import eu.newton.reworkedui.functionmanager.IObserver;
+import javafx.application.Platform;
 import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.chart.NumberAxis;
@@ -35,7 +36,7 @@ public class CartesianPlane extends Pane implements IObserver {
     }
 
     /**
-     * @param functionManager    math functions controller
+     * @param functionManager    math functions manager
      * @param xLow  x axis lower bound
      * @param xHi   x axis upper bound
      * @param yLow  y axis lower bound
@@ -97,8 +98,10 @@ public class CartesianPlane extends Pane implements IObserver {
     public void plot() {
         double step = (Math.abs(xAxis.getUpperBound()) + Math.abs(xAxis.getLowerBound())) / pointDensity;
 
-        for (MathematicalFunction f : functionManager.getFunctions()) {
+        for (GraphicMathFunction f : functionManager.getFunctions()) {
+
             if (f != null) {
+
                 double previousX = xAxis.getLowerBound();
                 double previousY = f.evaluate(previousX);
 
@@ -123,8 +126,11 @@ public class CartesianPlane extends Pane implements IObserver {
                     previousX = x;
                     previousY = f.evaluate(x);
                 }
+
             }
+
         }
+
     }
 
     private double[] splitSegment(double x0, double x1, int splits) {
@@ -148,7 +154,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @param color function's color
      */
-    private void plot(MathematicalFunction f, double[] points, Color color) {
+    private void plot(GraphicMathFunction f, double[] points, Color color) {
         if (points.length < 2) {
             throw new AssertionError("At least 2 points");
         }
@@ -190,7 +196,7 @@ public class CartesianPlane extends Pane implements IObserver {
 
         // TODO: find a suitable proportional rule for angle offset
         double step = Math.abs(x1 - x0);
-        double angleOffset = (step < 1? 1 / Math.pow(step, 2): Math.pow(step, 3));
+        double angleOffset = (step < 1 ? 1 / Math.pow(step, 2) : Math.pow(step, 3));
         return !(MAX_ANGLE <= angle) || !(angle <= Math.atan(angleOffset));
     }
 
@@ -201,7 +207,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @return  true if it is vertical
      */
-    private boolean isVertical(MathematicalFunction f, double[] points) {
+    private boolean isVertical(GraphicMathFunction f, double[] points) {
         double prevX = points[0];
         double prevY = f.evaluate(prevX);
 
