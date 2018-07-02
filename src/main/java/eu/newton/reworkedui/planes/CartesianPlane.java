@@ -1,6 +1,7 @@
 package eu.newton.reworkedui.planes;
 
 import eu.newton.GraphicMathFunction;
+import eu.newton.MathematicalFunction;
 import eu.newton.reworkedui.functionmanager.IFunctionManager;
 import eu.newton.reworkedui.functionmanager.IObserver;
 import javafx.application.Platform;
@@ -98,7 +99,7 @@ public class CartesianPlane extends Pane implements IObserver {
     public void plot() {
         double step = (Math.abs(xAxis.getUpperBound()) + Math.abs(xAxis.getLowerBound())) / pointDensity;
 
-        for (GraphicMathFunction f : functionManager.getFunctions()) {
+        for (MathematicalFunction f : functionManager.getFunctions()) {
 
             if (f != null) {
 
@@ -154,7 +155,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @param color function's color
      */
-    private void plot(GraphicMathFunction f, double[] points, Color color) {
+    private void plot(MathematicalFunction f, double[] points, Color color) {
         if (points.length < 2) {
             throw new AssertionError("At least 2 points");
         }
@@ -207,7 +208,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @return  true if it is vertical
      */
-    private boolean isVertical(GraphicMathFunction f, double[] points) {
+    private boolean isVertical(MathematicalFunction f, double[] points) {
         double prevX = points[0];
         double prevY = f.evaluate(prevX);
 

@@ -1,6 +1,7 @@
 package eu.newton.reworkedui.functionmanager;
 
 import eu.newton.GraphicMathFunction;
+import eu.newton.MathematicalFunction;
 
 import java.util.Collection;
 
@@ -33,5 +34,5 @@ public interface IFunctionManager extends IObservable {
      * Get all managed functions
      * @return  all managed functions
      */
-    Collection<GraphicMathFunction> getFunctions();
+    Collection<MathematicalFunction> getFunctions();
 }
