@@ -22,10 +22,12 @@ repositories {
 
 dependencies {
     compile 'com.jfoenix:jfoenix:8.0.4'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
 
     testCompile("org.junit.jupiter:junit-jupiter-api:5.2.0")
-    //testRuntime("org.junit.jupiter:junit-jupiter-engine:5.2.0")
     testCompile("org.junit.jupiter:junit-jupiter-params:5.2.0")
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
 
     compile project(':NewtonAPI')
 
@@ -35,8 +37,11 @@ shadowJar {
     exclude '.gitinclude'
 }
 
-
 wrapper {
     distributionType = Wrapper.DistributionType.BIN
     gradleVersion = '4.7'
+}
+
+test {
+    useJUnitPlatform()
 }

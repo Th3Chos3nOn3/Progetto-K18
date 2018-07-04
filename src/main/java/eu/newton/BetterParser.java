@@ -1,31 +1,41 @@
 package eu.newton;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class BetterParser implements IParser {
+public class BetterParser {
 
+    private static final Logger logger = LogManager.getLogger(BetterParser.class);
 
-    @Override
-    public IMathFunction parse(String input) {
+    public Function<BigDecimal, BigDecimal> parse(String input) throws ScriptException {
 
-        System.out.println("ORIGINAL: " + input);
+        logger.trace("ORIGINAL: {}", input);
 
         input = sanitizeFunction(input);
 
-        System.out.println("UNRET: " + input);
+        logger.trace("UNRET: {}", input);
 
         List<String> list = getXD(input, true);
 
-        System.out.println("THE LIST: " + list);
+        logger.trace("THE LIST: {}", list);
 
-        IMathFunction f = theTrueParsing(list);
+        String function = theTrueParsing(list);
+
+        ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
+
+        @SuppressWarnings("unchecked")
+        Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) engine.eval(String.format("new java.util.function.Function(%s)", function));
 
         return f;
     }
@@ -45,8 +55,8 @@ public class BetterParser implements IParser {
                 if (it.hasNext()) {
                     op = it.next();
 
-                    System.out.println("CURRENT: " + current);
-                    System.out.println("OP: " + op);
+                    logger.trace("CURRENT: {}", current);
+                    logger.trace("OP: {}", op);
 
 
 
@@ -54,9 +64,9 @@ public class BetterParser implements IParser {
                         String to = it.next();
                         it.set("(" + current + replaceBigMethods(op) + to + ")");
                         it.previous();
-                        System.out.println("PREVIOUS: " + it.previous());
+                        logger.trace("PREVIOUS: {}", it.previous());
                         it.remove();
-                        System.out.println("PREVIOUS: " + it.previous());
+                        logger.trace("PREVIOUS: {}", it.previous());
                         it.remove();
                     } else if (op.equals("^")) {
                         String to = it.next();
@@ -93,15 +103,15 @@ public class BetterParser implements IParser {
 
                         it.set("java.lang.Math.pow" + "(" + current + "," + to + ")");
                         it.previous();
-                        System.out.println("PREVIOUS: " + it.previous());
+                        logger.trace("PREVIOUS: {}", it.previous());
                         it.remove();
-                        System.out.println("PREVIOUS: " + it.previous());
+                        logger.trace("PREVIOUS: {}", it.previous());
                         it.remove();
                     }
                 }
             }
 
-            System.out.println(dijkstraHolyList);
+            logger.trace(dijkstraHolyList);
 
 
             dijkstraHolyList.forEach(s -> {
@@ -111,7 +121,7 @@ public class BetterParser implements IParser {
                     fuuu.append(s);
                 }
             });
-            System.out.println("FUNC: " + fuuu);
+            logger.trace("FUNC: {}", fuuu);
 
             if (fuuu.toString().startsWith("java.lang.Math.")) {
                 return "function(x) java.math.BigDecimal.valueOf(" + fuuu.toString() + ")";
@@ -123,14 +133,14 @@ public class BetterParser implements IParser {
                 return "function(x) java.math.BigDecimal.valueOf(" + fuuu.toString() + ")";
             }
             fuuu.append("function(x) ").append(dijkstraHolyList.get(0));
-            System.out.println("FUNC: " + fuuu);
+            logger.trace("FUNC: {}", fuuu);
 
         }
         return fuuu.toString();
     }
 
-    public int getIndexToken(String s) {
-        System.out.println("Index token of: " + s);
+    private int getIndexToken(String s) {
+        logger.trace("Index token of: {}", s);
         int index = -1;
 
         int check = -1;
@@ -201,31 +211,26 @@ public class BetterParser implements IParser {
     }
 
 
-    public String sanitizeFunction(String input) {
+    private String sanitizeFunction(String input) {
         input = input.replaceAll(" ", "");
 
-        if (input.charAt(0) == '-') {
+        char first = input.charAt(0);
+
+        if (first == '+') {
+            input = input.substring(1);
+        } else if (first == '-') {
             input = 0 + input;
-        } else if ((input.charAt(0) != 'x' && Character.isLetter(input.charAt(0))) || input.charAt(0) == '|') {
-            input = 0 + "+" + input;
         }
 
-        input = input.replaceAll("([^0-9)x])(\\|\\+)", "$1|");
         input = input.replaceAll("\\(\\+", "(");
-
-        //input = input.replaceAll("((\\d+|x|\\|)\\*(\\d+|x|\\|))+", "($0)");
-
         input = input.replaceAll("\\(-", "(0-");
-        input = input.replaceAll("([^0-9)])(\\|(\\(+)?-)", "$1|$30-");
-
-        //input = input.replaceAll("x\\*x", "(x*x)");
 
         return input;
     }
 
     private String replaceMathFunctions(String input) {
-        System.out.println();
-        System.out.println("ReplaceMath: " + input);
+        logger.trace("");
+        logger.trace("ReplaceMath: {}", input);
 
         input = input.replaceAll("\\basin\\b", "java.lang.Math.asin");
         input = input.replaceAll("\\bsinh\\b", "java.lang.Math.sinh");
@@ -238,18 +243,17 @@ public class BetterParser implements IParser {
         input = input.replaceAll("\\btan\\b", "java.lang.Math.tan");
         input = input.replaceAll("\\bln\\b", "java.lang.Math.log");
         input = input.replaceAll("\\bsqrt\\b", "java.lang.Math.sqrt");
-        input = input.replaceAll("(\\|(.*?)\\|)", "(java.lang.Math.abs($2))");
 
 
         input = "(java.math.BigDecimal.valueOf(" + input + "))";
 
-        System.out.println("EndMath: " + input);
+        logger.trace("EndMath: {}", input);
 
         return input;
     }
 
     private String replaceBigMethods(String input) {
-        System.out.println("ReplaceBig: " + input);
+        logger.trace("ReplaceBig: {}", input);
         char open = 0;
         char closed = 0;
         int begin = 0;
@@ -272,20 +276,10 @@ public class BetterParser implements IParser {
             }
             input = input.substring(begin, end);
         }
-        //System.out.println();
-//        input = input.replaceAll("((\\d+|x)\\*(\\d+|x))", "($0)");
-//        //System.out.println(input);
-//
-//        input = input.replaceAll("\\(-", "(0-");
-//        input = input.replaceAll("([^0-9|)])(\\|(\\(+)?-)", "$1|$30-");
-        //input = input.replaceAll("([^(\\d+|))])(\\|-)", "$1|0-");
-        //System.out.println(input);
 
         input = input.replaceAll("\\d+", "(java.math.BigDecimal.valueOf($0))");
-        //System.out.println(input);
 
         input = input.replaceAll("x", "(x)");
-
 
         input = input.replaceAll("\\*", ".multiply");
         input = input.replaceAll("/", ".divide");
@@ -294,13 +288,11 @@ public class BetterParser implements IParser {
         if (plusMatcher.find()) {
             input = '(' + plusMatcher.replaceAll(").add(") + ')';
         }
-//        System.out.println("COS ? " + input);
 
         Matcher minusMatcher = Pattern.compile("-").matcher(input);
         if (minusMatcher.find()) {
             input = '(' + minusMatcher.replaceAll(").subtract(") + ')';
         }
-//        System.out.println("COS ? " + input);
 
         input = input.replaceAll("[\\^]+", ".pow");
 
@@ -314,16 +306,15 @@ public class BetterParser implements IParser {
             input = input + closed;
         }
 
-        System.out.println("EndBig: " + input);
-        System.out.println();
+        logger.trace("EndBig: {}", input);
+        logger.trace("");
 
         return input;
 
     }
 
 
-    public IMathFunction theTrueParsing(List<String> input) {
-        ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
+    private String theTrueParsing(List<String> input) {
         for (int i = 0; i < input.size(); i++) {
             String item = input.get(i);
             if (item.length() != 1 && !uglyHackHasLetter(item)) {
@@ -332,33 +323,26 @@ public class BetterParser implements IParser {
         }
         String function = parseDijkstra(input);
 
-        System.out.println("IT'S ME: " + function);
-        IMathFunction f = null;
-        try {
-            f = (IMathFunction) engine.eval(String.format(
-                    "var mathFunc = Java.type('"+IMathFunction.class.getName()+"');" +
-                            "new mathFunc(%s)", function));
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-        return f;
+        logger.debug("IT'S ME: {}", function);
+
+        return function;
     }
 
 
-    public boolean uglyHackHasLetter(String input) {
+    private boolean uglyHackHasLetter(String input) {
         return input.chars().anyMatch(c -> c != (int)'x' && Character.isLetter(c));
     }
 
-    public List<String> getXD(String input, boolean normal) {
+    private List<String> getXD(String input, boolean normal) {
         List<String> hoooly = new ArrayList<>();
         int index;
 
 
-        System.out.println("Parsing: " + input);
+        logger.trace("Parsing: {}", input);
         while (!input.isEmpty() && (index = getIndexToken(input)) != -1) {
             String deeper = input.substring(0, index);
-            System.out.println("INDEX: " + index);
-            System.out.println("F: " + deeper);
+            logger.trace("INDEX: {}", index);
+            logger.trace("F: {}", deeper);
             if (deeper.length() == 1) {
                 if (deeper.charAt(0) == 'x') {
                     deeper = "(x)";
@@ -395,9 +379,9 @@ public class BetterParser implements IParser {
     }
 
 
-    public List<String> parseNestedXD(String input) {
-        System.out.println();
-        System.out.println("============BLOCK=============");
+    private List<String> parseNestedXD(String input) {
+        logger.trace("");
+        logger.trace("============BLOCK=============");
         List<String> hoooly = new ArrayList<>();
         int index = -1;
 
@@ -409,7 +393,7 @@ public class BetterParser implements IParser {
                 return hoooly;
             }
         }
-        System.out.println("SIMPLIFIED TO: " + input);
+        logger.trace("SIMPLIFIED TO: {}", input);
 
         char c = input.charAt(0);
         if (Character.isLetter(c) && c != 'x') {
@@ -437,11 +421,11 @@ public class BetterParser implements IParser {
         }
 
         if (index == -1) {
-            System.out.println("Clean Function: " + input);
+            logger.trace("Clean Function: {}", input);
         }
 
-        System.out.println("============BLOCK=============");
-        System.out.println();
+        logger.trace("============BLOCK=============");
+        logger.trace("");
         return hoooly;
     }
 }
