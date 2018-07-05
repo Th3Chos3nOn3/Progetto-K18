@@ -44,6 +44,7 @@ public class BetterParser {
         Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) engine.eval(String.format("new java.util.function.Function(function(x) %s)", function));
 
         return f;
+
     }
 
 

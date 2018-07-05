@@ -63,7 +63,7 @@ class FunctionSlotManager extends VBox {
         FunctionSlot(int index) {
             this.index = index;
 
-            Init();
+            init();
 
             functionInput.setOnMouseClicked(e -> selectedSlotTextProperty.bind(functionInput.textProperty()));
             functionInput.setOnKeyTyped(e -> selectedSlotTextProperty.bind(functionInput.textProperty()));
@@ -89,7 +89,7 @@ class FunctionSlotManager extends VBox {
 
         }
 
-        private void Init() {
+        private void init() {
             prompt = new Label("f(x) = ");
             prompt.getStyleClass().add("prompt");
 
@@ -117,7 +117,7 @@ class FunctionSlotManager extends VBox {
             private Label indexLabel;
 
             DerivativeButton() {
-                Init();
+                init();
 
                 index = 1;
 
@@ -143,7 +143,7 @@ class FunctionSlotManager extends VBox {
 
             }
 
-            private void Init() {
+            private void init() {
                 increment = new JFXButton("▴");
 
                 decrement = new JFXButton("▾");

@@ -7,16 +7,13 @@ import org.apache.logging.log4j.Logger;
 
 import javax.script.ScriptException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public final class FunctionManager implements IFunctionManager<BigDecimal> {
 
     private static final Logger logger = LogManager.getLogger(FunctionManager.class);
 
-    private HashMap<Integer, IDifferentiable<BigDecimal>> functionsTable;
+    private Map<Integer, IDifferentiable<BigDecimal>> functionsTable;
     private List<IObserver> observers;
 
     public FunctionManager() {

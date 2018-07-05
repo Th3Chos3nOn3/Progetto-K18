@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 
+
 public class Main {
 
     private static final Logger logger = LogManager.getLogger(BetterParser.class);

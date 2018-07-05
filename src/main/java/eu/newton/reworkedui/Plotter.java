@@ -25,7 +25,7 @@ public class Plotter extends StackPane {
         functionInputMenu = new FunctionInputMenu(functionController);
         cartesianPlane = new CartesianPlane(functionController, xLow, xHi, yLow, yHi);
 
-        Init();
+        init();
 
         show.visibleProperty().bindBidirectional(functionInputMenu.hiddenProperty());
         show.setOnAction(e -> {
@@ -42,7 +42,7 @@ public class Plotter extends StackPane {
         });
     }
 
-    private void Init() {
+    private void init() {
         show = new JFXButton(">>");
         show.getStyleClass().add("show");
 
