@@ -15,7 +15,7 @@ class ParserAndEvaluationTest {
         MathFunction f = new MathFunction(function);
         BigDecimal result = f.evaluate(BigDecimal.valueOf(2));
 
-        assertEquals(result.doubleValue(), expected);
+        assertEquals(expected, result.doubleValue());
         System.out.println(result);
 
     }

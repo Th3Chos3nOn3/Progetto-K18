@@ -8,6 +8,8 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Function;
@@ -20,13 +22,17 @@ public class BetterParser {
 
     public Function<BigDecimal, BigDecimal> parse(String input) throws ScriptException {
 
+        if (input.isEmpty()) {
+            throw new IllegalArgumentException("REEEEEE");
+        }
+
         logger.trace("ORIGINAL: {}", input);
 
         input = sanitizeFunction(input);
 
         logger.trace("UNRET: {}", input);
 
-        List<String> list = getXD(input, true);
+        List<String> list = getXD(input);
 
         logger.trace("THE LIST: {}", list);
 
@@ -35,13 +41,15 @@ public class BetterParser {
         ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
 
         @SuppressWarnings("unchecked")
-        Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) engine.eval(String.format("new java.util.function.Function(%s)", function));
+        Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) engine.eval(String.format("new java.util.function.Function(function(x) %s)", function));
 
         return f;
     }
 
 
     private String parseDijkstra(List<String> dijkstraHolyList) {
+        logger.trace("");
+        logger.trace("PARSING: {}", dijkstraHolyList);
         StringBuilder fuuu = new StringBuilder();
         if (dijkstraHolyList.size() != 1) {
             ListIterator<String> it = dijkstraHolyList.listIterator();
@@ -111,44 +119,48 @@ public class BetterParser {
                 }
             }
 
-            logger.trace(dijkstraHolyList);
+            logger.trace("DHL: {}", dijkstraHolyList);
 
 
             dijkstraHolyList.forEach(s -> {
                 if (s.length() == 1) {
                     fuuu.append(replaceBigMethods(s));
                 } else {
-                    fuuu.append(s);
+                    fuuu.append('(').append(s).append(')');
                 }
             });
-            logger.trace("FUNC: {}", fuuu);
-
-            if (fuuu.toString().startsWith("java.lang.Math.")) {
-                return "function(x) java.math.BigDecimal.valueOf(" + fuuu.toString() + ")";
-            }
-            fuuu.insert(0, "function(x) ");
 
         } else {
-            if (fuuu.toString().startsWith("java.lang.Math.")) {
-                return "function(x) java.math.BigDecimal.valueOf(" + fuuu.toString() + ")";
-            }
-            fuuu.append("function(x) ").append(dijkstraHolyList.get(0));
-            logger.trace("FUNC: {}", fuuu);
-
+            fuuu.append(dijkstraHolyList.get(0));
         }
-        return fuuu.toString();
+
+        String ffs;
+
+        char c;
+        int s = 0;
+        for (int i = 0; i < fuuu.toString().length(); i++) {
+            c = fuuu.toString().charAt(i);
+            if (c != '(') {
+                s = i;
+                break;
+            }
+        }
+
+        if (fuuu.toString().substring(s).startsWith("java.lang.Math.")) {
+            ffs = "java.math.BigDecimal.valueOf(" + fuuu.toString() + ")";
+        } else {
+            ffs = fuuu.toString();
+        }
+
+        logger.trace("DONE: {}", ffs);
+        logger.trace("");
+
+        return ffs;
     }
 
-    private int getIndexToken(String s) {
+
+    private int getGroupIndex(String s) {
         logger.trace("Index token of: {}", s);
-        int index = -1;
-
-        int check = -1;
-
-        int counter = -1;
-
-        char opening = 0;
-        char closing = 0;
 
         char c = s.charAt(0);
 
@@ -158,21 +170,34 @@ public class BetterParser {
 
         if (Character.isDigit(c) || c == 'x') {
 
+            int index = 0;
+
             for (int i = 0; i < s.length(); i++) {
                 c = s.charAt(i);
+                if (c == '^') {
+                    return i;
+                }
                 if (c == '+' || c == '-') {
-                    check = i;
+                    index = i;
                 }
                 if ((Character.isLetter(c) && c != 'x') || c == '(') {
                     char previous = s.charAt(i-1);
-                    if (check != -1 && (previous == '*' || previous == '/' || previous == '^')) {
-                        return check;
+                    if (index != 0 && (previous == '*' || previous == '/' || previous == '^')) {
+                        return index;
                     }
 
                     return i - 1;
                 }
             }
+
+            return s.length();
+
         } else {
+
+            int counter = -1;
+
+            char opening = 0;
+            char closing = 0;
 
             for (int i = 0; i < s.length(); i++) {
                 c = s.charAt(i);
@@ -196,17 +221,12 @@ public class BetterParser {
 
 
                 if (counter == 0) {
-                    index = i + 1;
-                    break;
+                    return i + 1;
                 }
             }
         }
 
-        if (index == -1) {
-            index = s.length();
-        }
-        return index;
-
+        throw new IllegalArgumentException("You are retarded");
 
     }
 
@@ -224,6 +244,10 @@ public class BetterParser {
 
         input = input.replaceAll("\\(\\+", "(");
         input = input.replaceAll("\\(-", "(0-");
+
+        input = input.replaceAll("([+\\-*/^])\\(x\\)", "$1x");
+
+        input = input.replaceAll("\\((\\d)\\)", "$1");
 
         return input;
     }
@@ -244,9 +268,6 @@ public class BetterParser {
         input = input.replaceAll("\\bln\\b", "java.lang.Math.log");
         input = input.replaceAll("\\bsqrt\\b", "java.lang.Math.sqrt");
 
-
-        input = "(java.math.BigDecimal.valueOf(" + input + "))";
-
         logger.trace("EndMath: {}", input);
 
         return input;
@@ -258,10 +279,6 @@ public class BetterParser {
         char closed = 0;
         int begin = 0;
         int end = input.length();
-
-        if (input.isEmpty()) {
-            return input;
-        }
 
         if (input.length() != 1) {
 
@@ -277,7 +294,7 @@ public class BetterParser {
             input = input.substring(begin, end);
         }
 
-        input = input.replaceAll("\\d+", "(java.math.BigDecimal.valueOf($0))");
+        input = input.replaceAll("\\d+", "(java.math.BigDecimal.valueOf($0))"); //TODO support decimal
 
         input = input.replaceAll("x", "(x)");
 
@@ -293,8 +310,6 @@ public class BetterParser {
         if (minusMatcher.find()) {
             input = '(' + minusMatcher.replaceAll(").subtract(") + ')';
         }
-
-        input = input.replaceAll("[\\^]+", ".pow");
 
         input = input.replaceAll("\\(\\)+", "");
 
@@ -333,99 +348,79 @@ public class BetterParser {
         return input.chars().anyMatch(c -> c != (int)'x' && Character.isLetter(c));
     }
 
-    private List<String> getXD(String input, boolean normal) {
+    private Collection<String> parseXD(String input) { //TODO inline this
+        if (isNumber(input)) {
+            return Collections.singleton("(java.math.BigDecimal.valueOf(" + input + "))");
+        } else if (input.length() == 1) {
+            char c = input.charAt(0);
+            if (c == 'x' || Character.isDigit(c)) {
+                return Collections.singleton('(' + input + ')');
+            } else {
+                return Collections.singleton(input);
+            }
+        } else if (input.charAt(0) == '(' && input.charAt(input.length() - 1) == ')') {
+            List<String> l = getXD(input.substring(1, input.length()-1));
+            return Collections.singleton('(' + parseDijkstra(l) + ')');
+        } else if (input.charAt(0) != 'x' && Character.isLetter(input.charAt(0))) {
+            return Collections.singleton('(' + parseNestedXD(input) + ')');
+        } else {
+            return Collections.singleton(replaceBigMethods(input));
+        }
+    }
+
+    private List<String> getXD(String input) {
         List<String> hoooly = new ArrayList<>();
         int index;
 
-
+        logger.trace("");
         logger.trace("Parsing: {}", input);
-        while (!input.isEmpty() && (index = getIndexToken(input)) != -1) {
-            String deeper = input.substring(0, index);
+        do {
+            index = getGroupIndex(input);
+            String sub = input.substring(0, index);
             logger.trace("INDEX: {}", index);
-            logger.trace("F: {}", deeper);
-            if (deeper.length() == 1) {
-                if (deeper.charAt(0) == 'x') {
-                    deeper = "(x)";
-                } else {
-                    if (Character.isDigit(deeper.charAt(0))) {
-                        deeper = replaceBigMethods(deeper);
-                    }
-                }
-                hoooly.add(deeper);
-            } else {
-                if (deeper.length() != 1 && uglyHackHasLetter(input)) {
-                    List<String> liist = parseNestedXD(deeper);
-                    String first = liist.get(0);
-                    liist.set(0, "(" + first);
+            logger.trace("F: {}", sub);
 
-                    String last = liist.get(liist.size() - 1);
-                    liist.set(liist.size() - 1, last + ")");
-
-                    hoooly.addAll(liist);
-                } else {
-                    if (normal) {
-                        hoooly.add(replaceBigMethods(deeper));
-                    } else {
-                        hoooly.add(deeper);
-                    }
-                }
-            }
+            Collection<String> l = parseXD(sub);
+            logger.trace("ADDING {}", l);
+            hoooly.addAll(l);
+            logger.trace("");
 
             input = input.substring(index);
-        }
-        return hoooly;
+        } while (!input.isEmpty());
 
+        return hoooly;
+    }
+
+    private String parseNestedXD(String input) {
+        logger.trace("");
+        logger.trace("============BLOCK=============");
+
+        char c;
+
+        for (int i = 0; i < input.length(); i++) {
+            c = input.charAt(i);
+
+            if (c == '(') {
+                String mathf = replaceMathFunctions(input.substring(0, i));
+                logger.trace("MATHF: {}", mathf);
+                String plzsaveme = mathf + '(' + parseDijkstra(getXD(input.substring(i+1, input.length()-1))) + ".doubleValue())";
+                logger.trace("============BLOCK=============");
+                logger.trace("");
+                return "java.math.BigDecimal.valueOf(" + plzsaveme + ')';
+            }
+        }
+
+        throw new IllegalArgumentException("You're not supposed to be here");
 
     }
 
 
-    private List<String> parseNestedXD(String input) {
-        logger.trace("");
-        logger.trace("============BLOCK=============");
-        List<String> hoooly = new ArrayList<>();
-        int index = -1;
-
-        while (input.charAt(0) == '(') {
-            if (input.charAt(input.length() -1) == ')') {
-                input = input.substring(1, input.length() - 1);
-            } else {
-                hoooly.addAll(getXD(input, false));
-                return hoooly;
-            }
+    private boolean isNumber(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
-        logger.trace("SIMPLIFIED TO: {}", input);
-
-        char c = input.charAt(0);
-        if (Character.isLetter(c) && c != 'x') {
-            hoooly.add(replaceMathFunctions(input));
-            for (int i = 0; i < input.length(); i++) {
-                c = input.charAt(i);
-                if (c == '(') {
-                    index = i;
-                    getXD(input.substring(i), false);
-                    break;
-                }
-            }
-        } else {
-            List<String> liiist = getXD(input, false);
-            StringBuilder ss = new StringBuilder();
-
-            liiist.forEach(s -> {
-                if (!uglyHackHasLetter(s)) {
-                    s = replaceBigMethods(s);
-                }
-                ss.append(s);
-            });
-
-            hoooly.add(ss.toString());
-        }
-
-        if (index == -1) {
-            logger.trace("Clean Function: {}", input);
-        }
-
-        logger.trace("============BLOCK=============");
-        logger.trace("");
-        return hoooly;
     }
 }
