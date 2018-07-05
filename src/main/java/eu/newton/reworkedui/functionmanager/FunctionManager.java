@@ -1,15 +1,22 @@
 package eu.newton.reworkedui.functionmanager;
 
 import eu.newton.MathFunction;
+import eu.newton.api.IDifferentiable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.script.ScriptException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-public final class FunctionManager implements IFunctionManager {
+public final class FunctionManager implements IFunctionManager<BigDecimal> {
 
-    private HashMap<Integer, MathFunction> functionsTable;
+    private static final Logger logger = LogManager.getLogger(FunctionManager.class);
+
+    private HashMap<Integer, IDifferentiable<BigDecimal>> functionsTable;
     private List<IObserver> observers;
 
     public FunctionManager() {
@@ -23,17 +30,19 @@ public final class FunctionManager implements IFunctionManager {
         MathFunction f = null;
 
         try {
+
            f = new MathFunction(function);
-        } catch (Exception e) {
-            System.err.println("ERROR: Unable to parse \"" + function + "\"");
+
+        } catch (ScriptException e) {
+
+            logger.trace("ERROR: Unable to parse {}", function);
         }
 
         if (f != null) {
             functionsTable.put(index, f);
         }
 
-        // DEBUG
-        viewTable();
+        logger.trace("FUNCTION MANAGER: {}", this::toString);
 
         notifyObservers();
 
@@ -44,8 +53,7 @@ public final class FunctionManager implements IFunctionManager {
     public boolean remove(int index) {
         boolean b = functionsTable.remove(index) != null;
 
-        // DEBUG
-        viewTable();
+        logger.trace("FUNCTION MANAGER: {}", this::toString);
 
         notifyObservers();
 
@@ -57,13 +65,13 @@ public final class FunctionManager implements IFunctionManager {
         functionsTable.clear();
 
         // DEBUG
-        viewTable();
+        logger.trace("FUNCTION MANAGER: {}", this::toString);
 
         notifyObservers();
     }
 
     @Override
-    public Collection<MathFunction> getFunctions() {
+    public Collection<IDifferentiable<BigDecimal>> getFunctions() {
         return functionsTable.values();
     }
 
@@ -84,16 +92,17 @@ public final class FunctionManager implements IFunctionManager {
             observer.update();
     }
 
-    private void viewTable() {
+    @Override
+    public String toString() {
 
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Function Manager:\n");
+        sb.append('\n');
 
         for (Integer i : functionsTable.keySet()) {
             sb.append(i).append(" : ").append(functionsTable.get(i).toString()).append('\n');
         }
 
-        System.err.println(sb.toString());
+        return sb.toString();
     }
 }

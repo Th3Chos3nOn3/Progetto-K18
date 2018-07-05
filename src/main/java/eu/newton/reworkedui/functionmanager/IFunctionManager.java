@@ -1,13 +1,13 @@
 package eu.newton.reworkedui.functionmanager;
 
-import eu.newton.MathFunction;
+import eu.newton.api.IDifferentiable;
 
 import java.util.Collection;
 
 /**
  * Must be implemented in order to manage functions through GUI
  */
-public interface IFunctionManager extends IObservable {
+public interface IFunctionManager<T> extends IObservable {
 
     /**
      * Add a function to be managed
@@ -33,5 +33,5 @@ public interface IFunctionManager extends IObservable {
      * Get all managed functions
      * @return  all managed functions
      */
-    Collection<MathFunction> getFunctions();
+    Collection<IDifferentiable<T>> getFunctions();
 }

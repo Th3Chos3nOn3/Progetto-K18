@@ -1,6 +1,6 @@
 package eu.newton.reworkedui.planes;
 
-import eu.newton.MathFunction;
+import eu.newton.api.IDifferentiable;
 import eu.newton.reworkedui.functionmanager.IFunctionManager;
 import eu.newton.reworkedui.functionmanager.IObserver;
 import javafx.geometry.Side;
@@ -23,7 +23,7 @@ public class CartesianPlane extends Pane implements IObserver {
     private static int CHECK_THRESHOLD = 10;
     private static double MAX_ANGLE = Math.atan(Double.MIN_VALUE);
 
-    private final IFunctionManager functionManager;
+    private final IFunctionManager<BigDecimal> functionManager;
     private Group sheet;
 
     private final NumberAxis xAxis;
@@ -32,7 +32,7 @@ public class CartesianPlane extends Pane implements IObserver {
     private double axisTickDensity;
     private int pointDensity;
 
-    public CartesianPlane(IFunctionManager functionManager, double xLow, double xHi, double yLow, double yHi) {
+    public CartesianPlane(IFunctionManager<BigDecimal> functionManager, double xLow, double xHi, double yLow, double yHi) {
         this(functionManager, xLow, xHi, yLow, yHi, STD_TICK_DENSITY, STD_POINT_DENSITY);
     }
 
@@ -45,7 +45,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param axisTickDensity   number of axis ticks
      * @param pointsDensity     number of drawn points for each canvas
      */
-    public CartesianPlane(IFunctionManager functionManager, double xLow, double xHi, double yLow, double yHi, double axisTickDensity, int pointsDensity) {
+    public CartesianPlane(IFunctionManager<BigDecimal> functionManager, double xLow, double xHi, double yLow, double yHi, double axisTickDensity, int pointsDensity) {
         if ((xLow > xHi) || (yLow > yHi)) {
             throw new AssertionError("Low(s) must be less than Hi(s)");
         }
@@ -99,7 +99,7 @@ public class CartesianPlane extends Pane implements IObserver {
     public void plot() {
         double step = (Math.abs(xAxis.getUpperBound()) + Math.abs(xAxis.getLowerBound())) / pointDensity;
 
-        for (MathFunction f : functionManager.getFunctions()) {
+        for (IDifferentiable<BigDecimal> f : functionManager.getFunctions()) {
 
             if (f != null) {
 
@@ -155,7 +155,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @param color function's color
      */
-    private void plot(MathFunction f, double[] points, Color color) {
+    private void plot(IDifferentiable<BigDecimal> f, double[] points, Color color) {
         if (points.length < 2) {
             throw new AssertionError("At least 2 points");
         }
@@ -214,7 +214,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be evaluated by f
      * @return  true if it is vertical
      */
-    private boolean isVertical(MathFunction f, double[] points) {
+    private boolean isVertical(IDifferentiable<BigDecimal> f, double[] points) {
         double prevX = points[0];
         double prevY = f.evaluate(BigDecimal.valueOf(prevX)).doubleValue();
 
