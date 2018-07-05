@@ -1,0 +1,53 @@
+
+.prompt {
+    -fx-font-size: 16px;
+    -fx-font-style: oblique;
+}
+
+.functionInput {
+    -fx-pref-width: 165px;
+    -fx-font-style: oblique;
+    -jfx-focus-color: green;
+}
+
+.delete {
+    -fx-background-color: #bc0000;
+    -fx-font-weight: bold;
+}
+
+.functionSlot {
+    -fx-pref-height: 50px;
+    -fx-alignment: center;
+    -fx-padding: 0px 2px 0px 8px;
+    -fx-spacing: 8px;
+    -fx-border-style: solid;
+    -fx-border-color: gray;
+    -fx-border-width: 0px 0px 1px 0px;
+    -fx-background-color: white;
+}
+
+.modifier {
+    -fx-alignment: center;
+    -fx-border-color: darkgreen;
+    -fx-border-style: solid;
+    -fx-border-width: 0px, 0px, 0px, 1px;
+}
+
+
+.computeDerivative {
+    -fx-pref-height: 50px;
+}
+
+.indexLabel {
+    -fx-font-weight: bold;
+    -fx-pref-width: 20px;
+}
+
+.derivativeButton {
+    -fx-alignment: center;
+    -fx-background-color: green;
+    -fx-border-radius: 9;
+    -fx-border-width: 10px;
+    -fx-border-color: white;
+    -fx-background-radius: 20;
+}

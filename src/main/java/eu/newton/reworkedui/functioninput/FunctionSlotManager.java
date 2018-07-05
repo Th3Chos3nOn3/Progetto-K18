@@ -49,6 +49,7 @@ class FunctionSlotManager extends VBox {
         if (last instanceof FunctionSlot && !((FunctionSlot) last).functionInput.getText().equals("")) {
             getChildren().add(0, new FunctionSlot(++functionsCounter));
         }
+
     }
 
     private class FunctionSlot extends HBox {
@@ -62,7 +63,7 @@ class FunctionSlotManager extends VBox {
         FunctionSlot(int index) {
             this.index = index;
 
-            graphicInit();
+            Init();
 
             functionInput.setOnMouseClicked(e -> selectedSlotTextProperty.bind(functionInput.textProperty()));
             functionInput.setOnKeyTyped(e -> selectedSlotTextProperty.bind(functionInput.textProperty()));
@@ -88,40 +89,24 @@ class FunctionSlotManager extends VBox {
 
         }
 
-        private void graphicInit() {
+        private void Init() {
             prompt = new Label("f(x) = ");
-            prompt.setStyle(
-                    "-fx-font-size: 16px;" +
-                            "-fx-font-style: oblique;"
-            );
+            prompt.getStyleClass().add("prompt");
 
             functionInput = new JFXTextField("");
-            functionInput.setStyle(
-                    "-fx-pref-width: 165px;" +
-                            "-fx-font-style: oblique;" +
-                            "-jfx-focus-color: green;"
-            );
+            functionInput.getStyleClass().add("functionInput");
 
             derivativeButton = new DerivativeButton();
 
             delete = new JFXButton("X");
-            delete.setStyle(
-                    "-fx-background-color: #bc0000;" +
-                            "-fx-font-weight: bold;"
-            );
+            delete.getStyleClass().add("delete");
 
-            setStyle(
-                    "-fx-pref-height: 50px;" +
-                            "-fx-alignment: center;" +
-                            "-fx-padding: 0px 2px 0px 8px;" +
-                            "-fx-spacing: 8px;" +
-                            "-fx-border-style: solid;" +
-                            "-fx-border-color: gray;" +
-                            "-fx-border-width: 0px 0px 1px 0px;" +
-                            "-fx-background-color: white;"
-            );
+            FunctionSlot.this.getStyleClass().add("functionSlot");
 
             getChildren().addAll(prompt, functionInput, derivativeButton, delete);
+
+            FunctionSlot.this.getStylesheets().add(getClass().getResource("/functionSlotManagerStylesheet.css").toExternalForm());
+
         }
 
         private class DerivativeButton extends HBox{
@@ -132,7 +117,7 @@ class FunctionSlotManager extends VBox {
             private Label indexLabel;
 
             DerivativeButton() {
-                graphicInit();
+                Init();
 
                 index = 1;
 
@@ -158,42 +143,27 @@ class FunctionSlotManager extends VBox {
 
             }
 
-            private void graphicInit() {
+            private void Init() {
                 increment = new JFXButton("▴");
 
                 decrement = new JFXButton("▾");
 
                 modifier = new VBox(increment, decrement);
-                modifier.setStyle(
-                        "-fx-alignment: center;" +
-                                "-fx-border-color: darkgreen;" +
-                                "-fx-border-style: solid;" +
-                                "-fx-border-width: 0px, 0px, 0px, 1px;"
-                );
+                modifier.getStyleClass().add("modifier");
 
                 computeDerivative = new JFXButton("Dⁿf ");
-                computeDerivative.setStyle(
-                        "-fx-pref-height: 50px;"
-                );
+                computeDerivative.getStyleClass().add("computeDerivative");
 
                 indexLabel = new Label(String.valueOf(index));
-                indexLabel.setStyle(
-                        "-fx-font-weight: bold;" +
-                                "-fx-pref-width: 20px;"
-                );
+                indexLabel.getStyleClass().add("indexLabel");
 
-                setStyle(
-                        "-fx-alignment: center;" +
-                                "-fx-background-color: green;" +
-                                "-fx-border-radius: 9;" +
-                                "-fx-border-width: 10px;" +
-                                "-fx-border-color: white;" +
-                                "-fx-background-radius: 20;"
-                );
+                DerivativeButton.this.getStyleClass().add("derivativeButton");
 
                 getChildren().addAll(computeDerivative, indexLabel, modifier);
             }
+
         }
+
     }
 
 }

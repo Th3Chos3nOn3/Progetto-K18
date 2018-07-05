@@ -25,7 +25,7 @@ public class Plotter extends StackPane {
         functionInputMenu = new FunctionInputMenu(functionController);
         cartesianPlane = new CartesianPlane(functionController, xLow, xHi, yLow, yHi);
 
-        graphicInit();
+        Init();
 
         show.visibleProperty().bindBidirectional(functionInputMenu.hiddenProperty());
         show.setOnAction(e -> {
@@ -42,30 +42,17 @@ public class Plotter extends StackPane {
         });
     }
 
-    private void graphicInit() {
+    private void Init() {
         show = new JFXButton(">>");
-        show.setStyle(
-                "-fx-background-color: #bfbfbf;" +
-                        "-jfx-button-type: RAISED;"
-        );
+        show.getStyleClass().add("show");
+
         StackPane.setAlignment(show, Pos.TOP_LEFT);
-        show.setTranslateY(10);
-        show.setTranslateX(10);
 
         functionTextPopup = new Label("f(x) = ");
-        functionTextPopup.setStyle(
-                "-fx-background-color: rgba(128,128,128,0.65);" +
-                        "-fx-background-radius: 10;" +
-                        "-fx-pref-height: 50px;" +
-                        "-fx-min-width: 80px;" +
-                        "-fx-padding: 15px;" +
-                        "-fx-alignment: center;" +
-                        "-fx-font-style: oblique;"
-        );
+        functionTextPopup.getStyleClass().add("functionTextPopup");
 
         StackPane.setAlignment(functionTextPopup, Pos.BOTTOM_CENTER);
 
-        functionTextPopup.setTranslateY(-30);
         functionTextPopup.setVisible(false);
 
         StackPane.setAlignment(functionInputMenu, Pos.TOP_LEFT);
@@ -77,5 +64,7 @@ public class Plotter extends StackPane {
         fadePopupAnimation = new SequentialTransition(functionTextPopup, waiting, fadeTransition);
 
         getChildren().addAll(cartesianPlane, functionInputMenu, show, functionTextPopup);
+
+        getStylesheets().add(getClass().getResource("/plotterStylesheet.css").toExternalForm());
     }
 }

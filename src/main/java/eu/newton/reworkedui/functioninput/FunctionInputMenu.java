@@ -52,57 +52,29 @@ public class FunctionInputMenu extends VBox {
 
     private void init() {
         addFunction = new JFXButton("+");
-        addFunction.setStyle(
-                "-fx-background-color: #a4a4a4;"
-        );
+        addFunction.getStyleClass().add("addFunction");
 
         clear = new JFXButton("Clear");
-        clear.setStyle(
-                "-fx-background-color: #bc0000;" +
-                        "-fx-font-weight: bold;"
-        );
+        clear.getStyleClass().add("clear");
 
         hidden = new SimpleBooleanProperty(false);
         hide = new JFXButton("<<");
-        hide.setStyle(
-                "-fx-background-color: #a4a4a4;"
-        );
+        hide.getStyleClass().add("hide");
 
         leftOptionsBar = new HBox(addFunction, clear);
-        leftOptionsBar.setStyle(
-                "-fx-spacing: 15;" +
-                        "-fx-alignment: center-left;" +
-                        "-fx-padding: 10;"
-        );
+        leftOptionsBar.getStyleClass().add("leftOptionsBar");
 
         optionsBar = new HBox(leftOptionsBar, hide);
-        optionsBar.setStyle(
-                "-fx-pref-height: 45px;" +
-                        "-fx-background-color: #d3d3d3;" +
-                        "-fx-border-width: 0px 0px 2px 0px;" +
-                        "-fx-border-style: solid;" +
-                        "-fx-border-color: #bebebe;" +
-                        "-fx-alignment: center-left;" +
-                        "-fx-spacing: 240px;"
-        );
-
-
+        optionsBar.getStyleClass().add("optionsBar");
 
         functionsScrollPane = new ScrollPane(functionSlotManager);
+        functionsScrollPane.getStyleClass().add("functionsScrollPane");
         JFXScrollPane.smoothScrolling(functionsScrollPane);
-        functionsScrollPane.setStyle(
-                "-fx-vbar-policy: never;" +
-                        "-fx-fit-to-width: true;"
-        );
 
-        setStyle(
-                "-fx-max-width: 410px;" +
-                        "-fx-border-style: solid;" +
-                        "-fx-border-color: #bebebe;" +
-                        "-fx-border-width: 0px 2px 0px 0px;" +
-                        "-fx-background-color: #ffffff;"
-        );
+        getStyleClass().add("functionInputMenu");
 
         getChildren().addAll(optionsBar, functionsScrollPane);
+
+        getStylesheets().add(getClass().getResource("/functionInputMenuStylesheet.css").toExternalForm());
     }
 }

@@ -12,6 +12,7 @@ public class Newton extends Application {
         Plotter root = new Plotter(new FunctionManager(), -5, 5, -5, 5);
 
         Scene scene = new Scene(root, 1280, 720);
+
         primaryStage.setTitle("Plotter");
         primaryStage.setScene(scene);
         primaryStage.show();
