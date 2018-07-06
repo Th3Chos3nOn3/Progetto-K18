@@ -24,7 +24,7 @@ class FunctionSlot extends HBox {
 
         functionInput.setOnKeyPressed(e -> {
             if (e.getCode().equals(KeyCode.UP)) {
-                derivativeButton.incrementDerivateiveOrder();
+                derivativeButton.incrementDerivativeOrder();
             } else if (e.getCode().equals(KeyCode.DOWN)) {
                 derivativeButton.decrementDerivativeOrder();
             }

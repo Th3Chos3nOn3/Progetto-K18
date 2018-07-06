@@ -31,7 +31,7 @@ class DerivativeButton extends HBox {
 
     }
 
-    void incrementDerivateiveOrder() {
+    void incrementDerivativeOrder() {
         increment.fire();
     }
 
