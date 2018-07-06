@@ -30,7 +30,10 @@ class FunctionSlot extends HBox {
             }
         });
 
-        functionInput.setOnAction(e -> functionSlotManager.getFunctionManager().add(index, functionInput.getText()));
+        functionInput.setOnAction(e -> {
+            if (!functionInput.getText().equals(""))
+                functionSlotManager.getFunctionManager().add(index, functionInput.getText());
+        });
 
         delete.setOnAction(e -> {
             if (functionSlotManager.getChildren().size() > 1) {
