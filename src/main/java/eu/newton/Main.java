@@ -39,9 +39,17 @@ public class Main {
 
     }
 
+
     public static BigDecimal k(double d) {
         return BigDecimal.valueOf(d);
     }
-}
 
+
+
+
+//    public static BigDecimal precise(BigDecimal a, BigDecimal b) {
+//        return a.divide(b, 1000, BigDecimal.ROUND_CEILING);
+//    }
+
+}
 
