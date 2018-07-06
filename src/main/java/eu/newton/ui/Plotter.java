@@ -4,7 +4,12 @@ import com.jfoenix.controls.JFXButton;
 import eu.newton.ui.functioninput.FunctionInputMenu;
 import eu.newton.ui.functionmanager.IFunctionManager;
 import eu.newton.ui.planes.CartesianPlane;
-import javafx.animation.*;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.FadeTransition;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;

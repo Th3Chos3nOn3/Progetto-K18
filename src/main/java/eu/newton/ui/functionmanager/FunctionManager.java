@@ -7,7 +7,11 @@ import org.apache.logging.log4j.Logger;
 
 import javax.script.ScriptException;
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collection;
 
 public final class FunctionManager implements IFunctionManager<BigDecimal> {
 
@@ -85,8 +89,9 @@ public final class FunctionManager implements IFunctionManager<BigDecimal> {
     @Override
     public void notifyObservers() {
 
-        for (IObserver observer : observers)
+        for (IObserver observer : observers) {
             observer.update();
+        }
     }
 
     @Override

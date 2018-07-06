@@ -196,8 +196,9 @@ public class CartesianPlane extends Pane implements IObserver {
      * @return  true if it is vertical;
      */
     private boolean isVertical(double x0, double y0, double x1, double y1) {
-        if (y0 == y1)
+        if (y0 == y1) {
             return false;
+        }
 
         double angle = Math.abs(Math.atan((y1 - y0) / (x1 - x0)));
 
