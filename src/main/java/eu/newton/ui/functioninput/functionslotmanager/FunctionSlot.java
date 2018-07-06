@@ -63,7 +63,7 @@ class FunctionSlot extends HBox {
 
         getChildren().addAll(prompt, functionInput, derivativeButton, delete);
 
-        FunctionSlot.this.getStylesheets().add(getClass().getResource("/functionSlotManagerStylesheet.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("/stylesheets/functionSlotStylesheet.css").toExternalForm());
     }
 
 }

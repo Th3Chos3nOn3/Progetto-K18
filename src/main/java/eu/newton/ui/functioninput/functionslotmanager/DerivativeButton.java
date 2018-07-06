@@ -58,6 +58,8 @@ class DerivativeButton extends HBox {
         DerivativeButton.this.getStyleClass().add("derivativeButton");
 
         getChildren().addAll(computeDerivative, indexLabel, modifier);
+
+        getStylesheets().add(getClass().getResource("/stylesheets/derivativeButtonStylesheet.css").toExternalForm());
     }
 
 }

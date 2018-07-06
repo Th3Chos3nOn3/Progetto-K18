@@ -76,6 +76,6 @@ public class FunctionInputMenu extends VBox {
 
         getChildren().addAll(optionsBar, functionsScrollPane);
 
-        getStylesheets().add(getClass().getResource("/functionInputMenuStylesheet.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("/stylesheets/functionInputMenuStylesheet.css").toExternalForm());
     }
 }

@@ -65,6 +65,6 @@ public class Plotter extends StackPane {
 
         getChildren().addAll(cartesianPlane, functionInputMenu, show, functionTextPopup);
 
-        getStylesheets().add(getClass().getResource("/plotterStylesheet.css").toExternalForm());
+        getStylesheets().add(getClass().getResource("/stylesheets/plotterStylesheet.css").toExternalForm());
     }
 }
