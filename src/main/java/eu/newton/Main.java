@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        final String f = "sqrt(x^x)";
+        final String f = "2^2^2^2";
 
         try {
             MathFunction function = new MathFunction(f);
@@ -21,7 +21,7 @@ public class Main {
             BigDecimal result = null;
 
             try {
-                result = function.evaluate(k(2.5));
+                result = function.evaluate(k(2));
             } catch (NumberFormatException | ArithmeticException ex) {
                 logger.error("Are you retarded ? ");
                 logger.error(ex.getMessage());

@@ -36,6 +36,10 @@ public class BetterParser {
 
         logger.trace("THE LIST: {}", list);
 
+        list = fixThePow(list);
+
+        logger.trace("POW FIXED: {}", list);
+
         String function = theTrueParsing(list);
 
         ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
@@ -47,10 +51,77 @@ public class BetterParser {
 
     }
 
+    private List<String> fixThePow(List<String> list) {
+        ListIterator<String> it = list.listIterator(list.size() - 1);
+
+        String current = it.next();
+        String op;
+
+
+        while (it.hasPrevious()) {
+            current = it.previous();
+
+            if (it.hasPrevious()) {
+                op = it.previous();
+
+                logger.trace("CURRENT: {}", current);
+                logger.trace("OP: {}", op);
+
+
+                if (op.equals("^")) {
+                    String to = it.previous();
+
+                    char open;
+                    char close;
+
+                    do {
+                        open = current.charAt(0);
+                        close = current.charAt(current.length() - 1);
+
+                        if (open == '(' && close == ')') {
+                            current = current.substring(1, current.length() - 1);
+                        }
+
+                    } while (open == '(' && close == ')');
+
+                    do {
+                        open = to.charAt(0);
+                        close = to.charAt(to.length() - 1);
+
+                        if (open == '(' && close == ')') {
+                            to = to.substring(1, to.length() - 1);
+                        }
+
+                    } while (open == '(' && close == ')');
+
+                    if (current.startsWith("java.math.BigDecimal")) {
+                        current = "(" + current + ")" + ".doubleValue()";
+                    }
+                    if (to.startsWith("java.math.BigDecimal")) {
+                        to = "(" + to + ")" + ".doubleValue()";
+                    }
+
+                    it.set("java.lang.Math.pow" + "(" + to + "," + current + ")");
+                    it.next();
+                    logger.trace("PREVIOUS: {}", it.next());
+                    it.remove();
+                    logger.trace("PREVIOUS: {}", it.next());
+                    it.remove();
+                }
+            }
+        }
+
+        logger.trace("POW L: {}", list);
+
+        return list;
+
+    }
+
 
     private String parseDijkstra(List<String> dijkstraHolyList) {
         logger.trace("");
         logger.trace("PARSING: {}", dijkstraHolyList);
+
         StringBuilder fuuu = new StringBuilder();
         if (dijkstraHolyList.size() != 1) {
             ListIterator<String> it = dijkstraHolyList.listIterator();
@@ -246,9 +317,23 @@ public class BetterParser {
         input = input.replaceAll("\\(\\+", "(");
         input = input.replaceAll("\\(-", "(0-");
 
-        input = input.replaceAll("([+\\-*/^])\\(x\\)", "$1x");
+        Pattern x = Pattern.compile("([+\\-*/^])\\(x\\)");
+        Matcher xMatcher = x.matcher(input);
 
-        input = input.replaceAll("\\((\\d)\\)", "$1");
+        while (xMatcher.find()) {
+            input = xMatcher.replaceAll("$1x");
+            xMatcher = x.matcher(input);
+        }
+
+        Pattern constant = Pattern.compile("([^a-zA-Z0-9])\\((\\d+(\\.\\d+)?)\\)");
+        Matcher constantMatcher = constant.matcher(input);
+
+        while (constantMatcher.find()) {
+            input = constantMatcher.replaceAll("$1$2");
+            constantMatcher = constant.matcher(input);
+        }
+
+        input = input.replaceAll("^\\((\\d+(\\.\\d+)?)\\)", "$1");
 
         return input;
     }
@@ -295,7 +380,7 @@ public class BetterParser {
             input = input.substring(begin, end);
         }
 
-        input = input.replaceAll("\\d+", "(java.math.BigDecimal.valueOf($0))"); //TODO support decimal
+        input = input.replaceAll("(\\d+(\\.\\d+)?)", "(java.math.BigDecimal.valueOf($0))");
 
         input = input.replaceAll("x", "(x)");
 
