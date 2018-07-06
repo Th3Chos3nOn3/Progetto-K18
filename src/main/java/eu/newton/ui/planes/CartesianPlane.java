@@ -1,8 +1,8 @@
-package eu.newton.reworkedui.planes;
+package eu.newton.ui.planes;
 
 import eu.newton.api.IDifferentiable;
-import eu.newton.reworkedui.functionmanager.IFunctionManager;
-import eu.newton.reworkedui.functionmanager.IObserver;
+import eu.newton.ui.functionmanager.IFunctionManager;
+import eu.newton.ui.functionmanager.IObserver;
 import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.chart.NumberAxis;

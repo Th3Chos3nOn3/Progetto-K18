@@ -1,4 +1,4 @@
-package eu.newton.reworkedui.functionmanager;
+package eu.newton.ui.functionmanager;
 
 public interface IObservable {
 

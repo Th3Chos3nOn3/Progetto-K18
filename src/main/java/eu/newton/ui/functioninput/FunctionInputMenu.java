@@ -1,8 +1,9 @@
-package eu.newton.reworkedui.functioninput;
+package eu.newton.ui.functioninput;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXScrollPane;
-import eu.newton.reworkedui.functionmanager.IFunctionManager;
+import eu.newton.ui.functioninput.functionslotmanager.FunctionSlotManager;
+import eu.newton.ui.functionmanager.IFunctionManager;
 import javafx.animation.TranslateTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;

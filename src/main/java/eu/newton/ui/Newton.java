@@ -1,6 +1,6 @@
-package eu.newton.reworkedui;
+package eu.newton.ui;
 
-import eu.newton.reworkedui.functionmanager.FunctionManager;
+import eu.newton.ui.functionmanager.FunctionManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;

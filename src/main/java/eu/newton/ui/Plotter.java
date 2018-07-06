@@ -1,9 +1,9 @@
-package eu.newton.reworkedui;
+package eu.newton.ui;
 
 import com.jfoenix.controls.JFXButton;
-import eu.newton.reworkedui.functioninput.FunctionInputMenu;
-import eu.newton.reworkedui.functionmanager.IFunctionManager;
-import eu.newton.reworkedui.planes.CartesianPlane;
+import eu.newton.ui.functioninput.FunctionInputMenu;
+import eu.newton.ui.functionmanager.IFunctionManager;
+import eu.newton.ui.planes.CartesianPlane;
 import javafx.animation.*;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
