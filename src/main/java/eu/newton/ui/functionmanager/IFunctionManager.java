@@ -33,6 +33,5 @@ public interface IFunctionManager<T> extends IObservable {
      * Get all managed functions
      * @return  all managed functions
      */
-
     Collection<IDifferentiable<T>> getFunctions();
 }
