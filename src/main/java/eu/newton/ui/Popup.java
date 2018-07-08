@@ -1,6 +1,10 @@
 package eu.newton.ui;
 
-import javafx.animation.*;
+import javafx.animation.FillTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.SequentialTransition;
+import javafx.animation.Timeline;
+import javafx.animation.FadeTransition;
 import javafx.beans.property.StringProperty;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
