@@ -71,3 +71,4 @@ public class Plotter extends StackPane {
         getStylesheets().add(getClass().getResource("/stylesheets/plotterStylesheet.css").toExternalForm());
     }
 }
+

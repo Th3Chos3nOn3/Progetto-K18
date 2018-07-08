@@ -1,0 +1,8 @@
+
+.chart-series-line {
+    -fx-stroke: red;
+}
+
+.chart-line-symbol {
+    -fx-padding: 1px;
+}
