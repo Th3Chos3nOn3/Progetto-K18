@@ -32,6 +32,7 @@ tasks.build.dependsOn tasks.shadowJar
 
 shadowJar {
     exclude '.gitinclude'
+    exclude 'log4j2-test.xml'
 }
 
 wrapper {

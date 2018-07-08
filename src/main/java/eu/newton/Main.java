@@ -13,7 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        final String f = "2^2^2^2";
+        final String f = "x^2+1^x*sin(x)";
 
         try {
             MathFunction function = new MathFunction(f);

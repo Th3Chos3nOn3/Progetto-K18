@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -42,10 +41,8 @@ public class BetterParser {
 
         String function = theTrueParsing(list);
 
-        ScriptEngine engine = new ScriptEngineManager(null).getEngineByName("nashorn");
-
         @SuppressWarnings("unchecked")
-        Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) engine.eval(String.format("new java.util.function.Function(function(x) %s)", function));
+        Function<BigDecimal,BigDecimal>  f = (Function<BigDecimal, BigDecimal>) Nashorn.getInstance().eval(String.format("new java.util.function.Function(function(x) %s)", function));
 
         return f;
 
@@ -131,6 +128,12 @@ public class BetterParser {
 
             while (it.hasNext()) {
                 current = it.next();
+
+                if (current.startsWith("java.lang.Math.")) {
+                    current = "java.math.BigDecimal.valueOf(" + current + ")";
+                    it.set(current);
+                    logger.trace("NEW CURRENT: {}", current);
+                }
 
                 if (it.hasNext()) {
                     op = it.next();
@@ -236,8 +239,18 @@ public class BetterParser {
 
         char c = s.charAt(0);
 
-        if (c == '*' || c == '/' || c == '+' || c == '-' || c == '^') {
+        if (c == '*' || c == '/' || c == '+' || c == '-' || c == '^' || c == 'x') {
             return 1;
+        }
+
+        if (Character.isDigit(c)) {
+            for (int i = 1; i < s.length(); i++) {
+                char d = s.charAt(i);
+                if (!Character.isDigit(d) && d != '.') {
+                    return i;
+                }
+            }
+            return s.length();
         }
 
         if (Character.isDigit(c) || c == 'x') {
