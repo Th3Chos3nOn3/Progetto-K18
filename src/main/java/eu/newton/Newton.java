@@ -1,5 +1,6 @@
-package eu.newton.ui;
+package eu.newton;
 
+import eu.newton.ui.Plotter;
 import eu.newton.ui.functionmanager.FunctionManager;
 import javafx.application.Application;
 import javafx.scene.Scene;

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ParserAndEvaluationTest {
 
     @ParameterizedTest
-    @CsvFileSource(resources = "functions.csv")
+    @CsvFileSource(resources = "functions.csv", numLinesToSkip = 2)
     void testFunction(String function, double expected) throws ScriptException {
         MathFunction f = new MathFunction(function);
         BigDecimal result = f.evaluate(BigDecimal.valueOf(2));

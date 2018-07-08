@@ -1,24 +1,19 @@
 plugins {
     id 'com.github.johnrengelman.shadow' version '2.0.4'
+    id 'application'
     id 'java'
 }
 
 group 'eu.newton'
-version '0.0.1'
+version '1.0.0'
 
+mainClassName = 'eu.newton.Newton'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
-
-jar {
-    manifest {
-        attributes 'Main-Class': 'eu.newton.Main'
-    }
-}
 
 repositories {
     mavenCentral()
 }
-
 
 dependencies {
     compile 'com.jfoenix:jfoenix:8.0.4'
@@ -33,8 +28,11 @@ dependencies {
 
 }
 
+tasks.build.dependsOn tasks.shadowJar
+
 shadowJar {
     exclude '.gitinclude'
+    exclude 'log4j2-test.xml'
 }
 
 wrapper {

@@ -43,6 +43,10 @@ public class FunctionInputMenu extends VBox {
         return functionSlotManager.selectedSlotTextPropertyProperty();
     }
 
+    public SimpleBooleanProperty getParseFailed() {
+        return functionSlotManager.parseFailedProperty();
+    }
+
     public boolean isHidden() {
         return hidden.get();
     }
@@ -79,3 +83,4 @@ public class FunctionInputMenu extends VBox {
         getStylesheets().add(getClass().getResource("/stylesheets/functionInputMenuStylesheet.css").toExternalForm());
     }
 }
+

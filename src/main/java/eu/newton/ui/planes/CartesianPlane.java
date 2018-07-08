@@ -107,8 +107,9 @@ public class CartesianPlane extends Pane implements IObserver {
                 double previousY = f.evaluate(BigDecimal.valueOf(previousX)).doubleValue();
 
                 for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
-                    if (!isVertical(previousX, previousY, x, f.evaluate(BigDecimal.valueOf(x)).doubleValue())) {
-                        plotSegment(previousX, previousY, x, f.evaluate(BigDecimal.valueOf(x)).doubleValue(), Color.RED);
+                    double y1 = f.evaluate(BigDecimal.valueOf(x)).doubleValue();
+                    if (!isVertical(previousX, previousY, x, y1)) {
+                        plotSegment(previousX, previousY, x, y1, Color.RED);
                     } else {
 
                         for (int i = 0; i < CHECK_THRESHOLD; i++) {
@@ -125,7 +126,7 @@ public class CartesianPlane extends Pane implements IObserver {
                     }
 
                     previousX = x;
-                    previousY = f.evaluate(BigDecimal.valueOf(x)).doubleValue();
+                    previousY = y1;
                 }
 
             }
@@ -164,10 +165,8 @@ public class CartesianPlane extends Pane implements IObserver {
             plotSegment(
                     points[i],
                     f.evaluate(BigDecimal.valueOf(points[i])).doubleValue(),
-                    points[i + 1],
-                    f.evaluate(BigDecimal.valueOf(points[i + 1])).doubleValue(),
-                    color
-            );
+                    points[i + 1], f.evaluate(BigDecimal.valueOf(points[i + 1])).doubleValue(),
+                    color);
         }
 
     }
@@ -225,7 +224,6 @@ public class CartesianPlane extends Pane implements IObserver {
             }
 
             prevX = points[i];
-            prevY = f.evaluate(BigDecimal.valueOf(prevX)).doubleValue();
         }
 
         return false;
