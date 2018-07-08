@@ -4,26 +4,23 @@ import com.jfoenix.controls.JFXButton;
 import eu.newton.ui.functioninput.FunctionInputMenu;
 import eu.newton.ui.functionmanager.IFunctionManager;
 import eu.newton.ui.planes.CartesianPlane;
-
-import javafx.animation.KeyFrame;
-import javafx.animation.FadeTransition;
-import javafx.animation.SequentialTransition;
-import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
-import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.util.Duration;
 
 public class Plotter extends StackPane {
+
+    private static final double POPUP_HEIGHT_RATIO = 2.3;
 
     private final IFunctionManager functionController;
     private final FunctionInputMenu functionInputMenu;
     private final CartesianPlane cartesianPlane;
 
     private JFXButton show;
-    private Label functionTextPopup;
-    private SequentialTransition fadePopupAnimation;
+    private Popup functionTextPopup;
+    private SimpleBooleanProperty playErrorAnimation;
 
     public Plotter(IFunctionManager functionController, double xLow, double xHi, double yLow, double yHi) {
         this.functionController = functionController;
@@ -41,32 +38,33 @@ public class Plotter extends StackPane {
         });
 
         functionTextPopup.textProperty().bind(functionInputMenu.getSelectedSlotText());
-        functionTextPopup.textProperty().addListener((a) -> {
-            functionTextPopup.setVisible(true);
-            fadePopupAnimation.playFromStart();
+
+        playErrorAnimation.bind(functionInputMenu.getParseFailed());
+        playErrorAnimation.addListener(listener -> {
+
+            if (playErrorAnimation.getValue()) {
+                functionTextPopup.playErrorAnimation();
+            }
+
         });
+
     }
 
     private void init() {
+        StackPane.setAlignment(functionInputMenu, Pos.TOP_LEFT);
+
         show = new JFXButton(">>");
         show.getStyleClass().add("show");
 
         StackPane.setAlignment(show, Pos.TOP_LEFT);
 
-        functionTextPopup = new Label("f(x) = ");
+        functionTextPopup = new Popup();
         functionTextPopup.getStyleClass().add("functionTextPopup");
 
-        StackPane.setAlignment(functionTextPopup, Pos.BOTTOM_CENTER);
-
+        functionTextPopup.translateYProperty().bind(this.heightProperty().divide(POPUP_HEIGHT_RATIO));
         functionTextPopup.setVisible(false);
 
-        StackPane.setAlignment(functionInputMenu, Pos.TOP_LEFT);
-
-        Timeline waiting = new Timeline(new KeyFrame(Duration.seconds(3)));
-        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(1), functionTextPopup);
-        fadeTransition.setFromValue(1);
-        fadeTransition.setToValue(0);
-        fadePopupAnimation = new SequentialTransition(functionTextPopup, waiting, fadeTransition);
+        playErrorAnimation = new SimpleBooleanProperty();
 
         getChildren().addAll(cartesianPlane, functionInputMenu, show, functionTextPopup);
 

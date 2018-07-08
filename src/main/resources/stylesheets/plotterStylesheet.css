@@ -5,14 +5,3 @@
     -fx-translate-x: 10;
     -fx-translate-y: 10;
 }
-
-.functionTextPopup {
-    -fx-background-color: rgba(128,128,128,0.65);
-    -fx-background-radius: 10;
-    -fx-pref-height: 50px;
-    -fx-min-width: 80px;
-    -fx-padding: 15px;
-    -fx-alignment: center;
-    -fx-font-style: oblique;
-    -fx-translate-y: -30;
-}

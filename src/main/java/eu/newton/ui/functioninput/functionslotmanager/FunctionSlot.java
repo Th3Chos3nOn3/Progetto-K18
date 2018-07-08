@@ -2,19 +2,25 @@ package eu.newton.ui.functioninput.functionslotmanager;
 
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXTextField;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 
 class FunctionSlot extends HBox {
+
     private int index;
 
     private JFXTextField functionInput;
     private DerivativeButton derivativeButton;
     private JFXButton delete;
 
-    FunctionSlot(FunctionSlotManager functionSlotManager, SimpleStringProperty selectedSlotTextProperty, int index) {
+    FunctionSlot(
+            FunctionSlotManager functionSlotManager,
+            SimpleStringProperty selectedSlotTextProperty, SimpleBooleanProperty parseFailed,
+            int index) {
+
         this.index = index;
 
         init();
@@ -31,8 +37,15 @@ class FunctionSlot extends HBox {
         });
 
         functionInput.setOnAction(e -> {
-            if (!functionInput.getText().equals(""))
-                functionSlotManager.getFunctionManager().add(index, functionInput.getText());
+
+            if (!functionInput.getText().equals("")) {
+                boolean parseResult = functionSlotManager.getFunctionManager().add(index, functionInput.getText());
+
+                parseFailed.set(!parseResult);
+            }
+
+            parseFailed.set(false);
+
         });
 
         delete.setOnAction(e -> {

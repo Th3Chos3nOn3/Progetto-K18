@@ -34,7 +34,7 @@ public final class FunctionManager implements IFunctionManager<BigDecimal> {
 
            f = new MathFunction(function);
 
-        } catch (ScriptException e) {
+        } catch (Exception e) {
 
             logger.trace("ERROR: Unable to parse {}", function);
         }
