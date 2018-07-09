@@ -14,6 +14,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
     private static final Logger logger = LogManager.getLogger(BetterParser.class);
 
+    private static final double RETARDED_H = 0.0000000001;
     private static final int SAMPLING_FACTOR = 100;
     private static final int ZERO_PRECISION = 5;
 
@@ -32,7 +33,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
     @Override
     public BigDecimal differentiate(BigDecimal x, int grade) {
-        final BigDecimal h = BigDecimal.valueOf(Double.MIN_VALUE).negate();
+        final BigDecimal h = BigDecimal.valueOf(RETARDED_H).negate();
         final BigDecimal[] sum = {BigDecimal.ZERO};
 
         IntStream.rangeClosed(0, grade).forEachOrdered(k -> {
@@ -174,6 +175,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
             BigDecimal x = a;
 
             for (int i = 0; i < ZERO_PRECISION; i++) {
+
                 x = x.subtract(evaluate(x).divide(differentiate(x, 1), BigDecimal.ROUND_CEILING));
             }
 
@@ -183,5 +185,9 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
         return null;
     }
 
+    public static void main(String[] args) throws ScriptException {
 
+        // Plz test me!
+
+    }
 }
