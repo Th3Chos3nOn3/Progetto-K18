@@ -24,6 +24,8 @@ public class CartesianPlane extends Pane implements IObserver {
     private static int CHECK_THRESHOLD = 10;
     private static double MAX_ANGLE = Math.atan(Double.MIN_VALUE);
 
+    private static final double DRAG_MOVE_FACTOR = .5;
+
     private final IFunctionManager<BigDecimal> functionManager;
     private Group sheet;
 
@@ -97,20 +99,26 @@ public class CartesianPlane extends Pane implements IObserver {
                 planeDragManager.setDrag(mapToCartesianX(dragX), mapToCartesianY(dragY));
                 paneDragManager.setDrag(dragX, dragY);
 
-                double planeMoveX = planeDragManager.moveX();
-                double planeMoveY = planeDragManager.moveY();
+                double planeMoveX = planeDragManager.moveX() * DRAG_MOVE_FACTOR;
+                double planeMoveY = planeDragManager.moveY() * DRAG_MOVE_FACTOR;
 
                 xAxis.setLowerBound(xAxis.getLowerBound() - planeMoveX);
                 xAxis.setUpperBound(xAxis.getUpperBound() - planeMoveX);
                 yAxis.setLowerBound(yAxis.getLowerBound() + planeMoveY);
                 yAxis.setUpperBound(yAxis.getUpperBound() + planeMoveY);
 
-                double paneMoveX = paneDragManager.moveX();
-                double paneMoveY = paneDragManager.moveY();
+                double paneMoveX = paneDragManager.moveX() * DRAG_MOVE_FACTOR;
+                double paneMoveY = paneDragManager.moveY() * DRAG_MOVE_FACTOR;
 
                 // LOL, I have to move the sheet
                 sheet.setTranslateX(sheet.getTranslateX() + paneMoveX);
                 sheet.setTranslateY(sheet.getTranslateY() + paneMoveY);
+
+                //xAxis.setTranslateX(xAxis.getTranslateX() + paneMoveX);
+                //xAxis.setTranslateY(xAxis.getTranslateY() + paneMoveY);
+                //yAxis.setTranslateX(yAxis.getTranslateX() + paneMoveX);
+                //yAxis.setTranslateY(yAxis.getTranslateY() + paneMoveY);
+
                 sheetRefresh();
 
                 planeDragManager.setAnchor(mapToCartesianX(dragX), mapToCartesianY(dragY));
