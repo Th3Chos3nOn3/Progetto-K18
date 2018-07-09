@@ -1,5 +1,6 @@
 package eu.newton.ui.functionmanager;
 
+import eu.newton.IMathFunction;
 import eu.newton.api.IDifferentiable;
 
 import java.util.Collection;
@@ -33,5 +34,5 @@ public interface IFunctionManager<T> extends IObservable {
      * Get all managed functions
      * @return  all managed functions
      */
-    Collection<IDifferentiable<T>> getFunctions();
+    Collection<IMathFunction<T>> getFunctions();
 }
