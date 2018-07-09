@@ -3,6 +3,7 @@ package eu.newton.ui.planes;
 import eu.newton.api.IDifferentiable;
 import eu.newton.ui.functionmanager.IFunctionManager;
 import eu.newton.ui.functionmanager.IObserver;
+import eu.newton.ui.planes.helpers.DragManager;
 import javafx.geometry.Side;
 import javafx.scene.Group;
 import javafx.scene.chart.NumberAxis;
@@ -31,6 +32,9 @@ public class CartesianPlane extends Pane implements IObserver {
 
     private double axisTickDensity;
     private int pointDensity;
+
+    private final DragManager planeDragManager;
+    private final DragManager paneDragManager;
 
     public CartesianPlane(IFunctionManager<BigDecimal> functionManager, double xLow, double xHi, double yLow, double yHi) {
         this(functionManager, xLow, xHi, yLow, yHi, STD_TICK_DENSITY, STD_POINT_DENSITY);
@@ -70,10 +74,51 @@ public class CartesianPlane extends Pane implements IObserver {
         yAxis.layoutXProperty().bind(widthProperty().divide(2));
         yAxis.prefHeightProperty().bind(heightProperty());
 
+        planeDragManager = new DragManager();
+        paneDragManager = new DragManager();
+
         getChildren().addAll(xAxis, yAxis, sheet);
 
         // TODO: implement zoom
-        // TODO: implement drag
+        setOnScroll(scroll -> {
+
+        });
+
+        setOnMousePressed(click -> {
+
+            planeDragManager.setAnchor(mapToCartesianX(click.getX()), mapToCartesianY(click.getY()));
+            paneDragManager.setAnchor(click.getX(), click.getY());
+
+            setOnMouseDragged(drag -> {
+
+                double dragX = drag.getX();
+                double dragY = drag.getY();
+
+                planeDragManager.setDrag(mapToCartesianX(dragX), mapToCartesianY(dragY));
+                paneDragManager.setDrag(dragX, dragY);
+
+                double planeMoveX = planeDragManager.moveX();
+                double planeMoveY = planeDragManager.moveY();
+
+                xAxis.setLowerBound(xAxis.getLowerBound() - planeMoveX);
+                xAxis.setUpperBound(xAxis.getUpperBound() - planeMoveX);
+                yAxis.setLowerBound(yAxis.getLowerBound() + planeMoveY);
+                yAxis.setUpperBound(yAxis.getUpperBound() + planeMoveY);
+
+                double paneMoveX = paneDragManager.moveX();
+                double paneMoveY = paneDragManager.moveY();
+
+                // LOL, I have to move the sheet
+                sheet.setTranslateX(sheet.getTranslateX() + paneMoveX);
+                sheet.setTranslateY(sheet.getTranslateY() + paneMoveY);
+                sheetRefresh();
+
+                planeDragManager.setAnchor(mapToCartesianX(dragX), mapToCartesianY(dragY));
+                paneDragManager.setAnchor(dragX, dragY);
+            });
+
+        });
+
     }
 
     @Override

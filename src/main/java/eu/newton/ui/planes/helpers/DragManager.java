@@ -1,6 +1,6 @@
-package eu.newton.ui.planes;
+package eu.newton.ui.planes.helpers;
 
-final class DragManager {
+public final class DragManager {
 
     private double anchorX, anchorY;
     private double dragX, dragY;
