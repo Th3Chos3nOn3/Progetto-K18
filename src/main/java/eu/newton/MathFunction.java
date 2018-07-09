@@ -92,7 +92,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
             return null;
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
 
         BigDecimal xMax = a;
         BigDecimal yMax = evaluate(a);
@@ -121,7 +121,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
             return null;
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
 
         BigDecimal xMin = a;
         BigDecimal yMin = evaluate(a);
@@ -146,7 +146,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
             throw new AssertionError("a < b");
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
 
         int dySign = b.subtract(a).signum();
 
@@ -170,7 +170,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
     @Override
     public BigDecimal zero(BigDecimal a, BigDecimal b) {
 
-        if (isMonotone(a, b) && evaluate(a).multiply(evaluate(b)).signum() <= 0) {
+        if ((isMonotone(a, b)) && (evaluate(a).multiply(evaluate(b)).signum() <= 0)) {
 
             BigDecimal x = a;
 
@@ -180,6 +180,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
             }
 
             return x;
+
         }
 
         return null;
