@@ -27,7 +27,7 @@ public class BetterParser {
 
         logger.trace("ORIGINAL: {}", input);
 
-        input = sanitizeFunction(input);
+        input = Sanitizer.simplify(input);
 
         logger.trace("UNRET: {}", input);
 
@@ -313,42 +313,6 @@ public class BetterParser {
 
         throw new IllegalArgumentException("You are retarded");
 
-    }
-
-
-    private String sanitizeFunction(String input) {
-        input = input.replaceAll(" ", "");
-
-        char first = input.charAt(0);
-
-        if (first == '+') {
-            input = input.substring(1);
-        } else if (first == '-') {
-            input = 0 + input;
-        }
-
-        input = input.replaceAll("\\(\\+", "(");
-        input = input.replaceAll("\\(-", "(0-");
-
-        Pattern x = Pattern.compile("([+\\-*/^])\\(x\\)");
-        Matcher xMatcher = x.matcher(input);
-
-        while (xMatcher.find()) {
-            input = xMatcher.replaceAll("$1x");
-            xMatcher = x.matcher(input);
-        }
-
-        Pattern constant = Pattern.compile("([^a-zA-Z0-9])\\((\\d+(\\.\\d+)?)\\)");
-        Matcher constantMatcher = constant.matcher(input);
-
-        while (constantMatcher.find()) {
-            input = constantMatcher.replaceAll("$1$2");
-            constantMatcher = constant.matcher(input);
-        }
-
-        input = input.replaceAll("^\\((\\d+(\\.\\d+)?)\\)", "$1");
-
-        return input;
     }
 
     private String replaceMathFunctions(String input) {
