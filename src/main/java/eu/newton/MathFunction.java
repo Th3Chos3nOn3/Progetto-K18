@@ -1,7 +1,5 @@
 package eu.newton;
 
-import eu.newton.api.IDifferentiable;
-import eu.newton.api.IFunction;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -12,10 +10,13 @@ import java.util.stream.IntStream;
 
 import static eu.newton.Main.k;
 
-public final class MathFunction implements IFunction<BigDecimal>, IDifferentiable<BigDecimal> {
+public final class MathFunction implements IMathFunction<BigDecimal> {
 
     private static final Logger logger = LogManager.getLogger(BetterParser.class);
-    
+
+    private static final int SAMPLING_FACTOR = 100;
+    private static final int ZERO_PRECISION = 5;
+
     private final String function;
     private final Function<BigDecimal, BigDecimal> f;
 
@@ -78,4 +79,108 @@ public final class MathFunction implements IFunction<BigDecimal>, IDifferentiabl
     public BigDecimal evaluate(BigDecimal x) {
         return f.apply(x);
     }
+
+    @Override
+    public BigDecimal[] max(BigDecimal a, BigDecimal b) {
+
+        if (a.compareTo(b) >= 0) {
+            throw new AssertionError("a < b");
+        }
+
+        if (!isMonotone(a, b)) {
+            return null;
+        }
+
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+
+        BigDecimal xMax = a;
+        BigDecimal yMax = evaluate(a);
+
+        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
+
+            BigDecimal y = evaluate(x);
+
+            if (y.compareTo(yMax) > 0) {
+                xMax = x;
+                yMax = y;
+            }
+        }
+
+        return new BigDecimal[] {xMax, yMax};
+    }
+
+    @Override
+    public BigDecimal[] min(BigDecimal a, BigDecimal b) {
+
+        if (a.compareTo(b) >= 0) {
+            throw new AssertionError("a < b");
+        }
+
+        if (!isMonotone(a, b)) {
+            return null;
+        }
+
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+
+        BigDecimal xMin = a;
+        BigDecimal yMin = evaluate(a);
+
+        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
+
+            BigDecimal y = evaluate(x);
+
+            if (y.compareTo(yMin) < 0) {
+                xMin = x;
+                yMin = y;
+            }
+        }
+
+        return new BigDecimal[] {xMin, yMin};
+    }
+
+    @Override
+    public boolean isMonotone(BigDecimal a, BigDecimal b) {
+
+        if (a.compareTo(b) >= 0) {
+            throw new AssertionError("a < b");
+        }
+
+        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_CEILING);
+
+        int dySign = b.subtract(a).signum();
+
+        BigDecimal yPrev = evaluate(a);
+
+        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
+            BigDecimal y = evaluate(x);
+
+            if (y.subtract(yPrev).signum() == dySign || y.subtract(yPrev).signum() == 0) {
+                // Do nothing, may be monotone
+            } else {
+                return false;
+            }
+
+            yPrev = y;
+        }
+
+        return true;
+    }
+
+    @Override
+    public BigDecimal zero(BigDecimal a, BigDecimal b) {
+
+        if (isMonotone(a, b) && evaluate(a).multiply(evaluate(b)).signum() <= 0) {
+
+            BigDecimal x = a;
+
+            for (int i = 0; i < ZERO_PRECISION; i++) {
+                x = x.subtract(evaluate(x).divide(differentiate(x, 1), BigDecimal.ROUND_CEILING));
+            }
+
+            return x;
+        }
+
+        return null;
+    }
+
 }

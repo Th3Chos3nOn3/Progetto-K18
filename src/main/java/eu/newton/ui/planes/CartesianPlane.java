@@ -18,7 +18,7 @@ import java.math.BigDecimal;
  */
 public class CartesianPlane extends Pane implements IObserver {
 
-    private static final int STD_POINT_DENSITY = 200;
+    private static final int STD_POINT_DENSITY = 100;
     private static final double STD_TICK_DENSITY = 10;
     private static int CHECK_THRESHOLD = 10;
     private static double MAX_ANGLE = Math.atan(Double.MIN_VALUE);

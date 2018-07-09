@@ -1,5 +1,6 @@
 package eu.newton.ui.functionmanager;
 
+import eu.newton.IMathFunction;
 import eu.newton.MathFunction;
 import eu.newton.api.IDifferentiable;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +18,7 @@ public final class FunctionManager implements IFunctionManager<BigDecimal> {
 
     private static final Logger logger = LogManager.getLogger(FunctionManager.class);
 
-    private Map<Integer, IDifferentiable<BigDecimal>> functionsTable;
+    private Map<Integer, IMathFunction<BigDecimal>> functionsTable;
     private List<IObserver> observers;
 
     public FunctionManager() {
@@ -72,7 +73,7 @@ public final class FunctionManager implements IFunctionManager<BigDecimal> {
     }
 
     @Override
-    public Collection<IDifferentiable<BigDecimal>> getFunctions() {
+    public Collection<IMathFunction<BigDecimal>> getFunctions() {
         return functionsTable.values();
     }
 
