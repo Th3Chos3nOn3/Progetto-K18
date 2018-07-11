@@ -15,8 +15,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
     private static final Logger logger = LogManager.getLogger(BetterParser.class);
 
     private static final double RETARDED_H = 0.0000000001;
-    private static final int SAMPLING_FACTOR = 100;
-    private static final int ZERO_PRECISION = 5;
+    private static final int SAMPLING_FACTOR = 20;
 
     private final String function;
     private final Function<BigDecimal, BigDecimal> f;
@@ -82,82 +81,88 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
     }
 
     @Override
-    public BigDecimal[] max(BigDecimal a, BigDecimal b) {
+    public BigDecimal max(BigDecimal a, BigDecimal b) {
 
-        if (a.compareTo(b) >= 0) {
-            throw new AssertionError("a < b");
-        }
+        double da = a.doubleValue();
+        double db = b.doubleValue();
 
-        if (!isMonotone(a, b)) {
+        if (da >= db) {
             return null;
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
+        double step = computeDistance(da, db) / SAMPLING_FACTOR;
 
-        BigDecimal xMax = a;
-        BigDecimal yMax = evaluate(a);
+        double xMax = da;
+        double yMax = evaluate(a).doubleValue();
 
-        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
+        for (double x = da + step; x <= db; x += step) {
 
-            BigDecimal y = evaluate(x);
+            double y = evaluate(BigDecimal.valueOf(x)).doubleValue();
 
-            if (y.compareTo(yMax) > 0) {
+            if (y > yMax) {
                 xMax = x;
                 yMax = y;
             }
         }
 
-        return new BigDecimal[] {xMax, yMax};
+        return BigDecimal.valueOf(xMax);
     }
 
     @Override
-    public BigDecimal[] min(BigDecimal a, BigDecimal b) {
+    public BigDecimal min(BigDecimal a, BigDecimal b) {
 
-        if (a.compareTo(b) >= 0) {
-            throw new AssertionError("a < b");
-        }
+        double da = a.doubleValue();
+        double db = b.doubleValue();
 
-        if (!isMonotone(a, b)) {
+        if (da >= db) {
+            System.err.println("da >= db");
             return null;
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
+        double step = computeDistance(da, db) / SAMPLING_FACTOR;
 
-        BigDecimal xMin = a;
-        BigDecimal yMin = evaluate(a);
+        double xMin = da;
+        double yMin = evaluate(a).doubleValue();
 
-        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
+        for (double x = da + step; x <= db; x += step) {
 
-            BigDecimal y = evaluate(x);
+            double y = evaluate(BigDecimal.valueOf(x)).doubleValue();
 
-            if (y.compareTo(yMin) < 0) {
+            if (y < yMin) {
                 xMin = x;
                 yMin = y;
             }
         }
 
-        return new BigDecimal[] {xMin, yMin};
+        return BigDecimal.valueOf(xMin);
     }
 
     @Override
     public boolean isMonotone(BigDecimal a, BigDecimal b) {
 
-        if (a.compareTo(b) >= 0) {
-            throw new AssertionError("a < b");
+        double da = a.doubleValue();
+        double db = b.doubleValue();
+
+        if (da >= db) {
+            return false;
         }
 
-        BigDecimal step = b.subtract(a).divide(BigDecimal.valueOf(SAMPLING_FACTOR), BigDecimal.ROUND_HALF_EVEN);
+        double step = computeDistance(da, db) / SAMPLING_FACTOR;
 
-        int dySign = b.subtract(a).signum();
+        double dySign = Math.signum(db - da);
 
-        BigDecimal yPrev = evaluate(a);
+        double yPrev = evaluate(a).doubleValue();
 
-        for (BigDecimal x = a.add(step); x.compareTo(b) <= 0; x = x.add(step)) {
-            BigDecimal y = evaluate(x);
+        for (double x = da + step; x <= db; x += step) {
 
-            if (y.subtract(yPrev).signum() == dySign || y.subtract(yPrev).signum() == 0) {
+            double y = evaluate(BigDecimal.valueOf(x)).doubleValue();
+
+            if (Math.signum(y - yPrev) == dySign || Math.signum(y - yPrev) == 0) {
+
                 // Do nothing, may be monotone
+
             } else {
+
                 return false;
             }
 
@@ -172,18 +177,29 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
         if ((isMonotone(a, b)) && (evaluate(a).multiply(evaluate(b)).signum() <= 0)) {
 
-            BigDecimal x = a;
-
-            for (int i = 0; i < ZERO_PRECISION; i++) {
-
-                x = x.subtract(evaluate(x).divide(differentiate(x, 1), BigDecimal.ROUND_CEILING));
-            }
-
-            return x;
+            return a.add(b).divide(BigDecimal.valueOf(2), BigDecimal.ROUND_HALF_EVEN);
 
         }
 
         return null;
+    }
+
+    private double computeDistance(double a, double b) {
+
+        if (a == b) {
+
+            return 0;
+
+        } else if (a > b) {
+
+            return a - b;
+
+        } else {
+
+            return b - a;
+
+        }
+
     }
 
     public static void main(String[] args) throws ScriptException {

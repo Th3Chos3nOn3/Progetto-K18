@@ -3,7 +3,7 @@ package eu.newton.ui;
 import com.jfoenix.controls.JFXButton;
 import eu.newton.ui.functioninput.FunctionInputMenu;
 import eu.newton.ui.functionmanager.IFunctionManager;
-import eu.newton.ui.planes.CartesianPlane;
+import eu.newton.ui.planes.BetterCartesianPlane;
 import javafx.animation.TranslateTransition;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.Pos;
@@ -16,7 +16,7 @@ public class Plotter extends StackPane {
 
     private final IFunctionManager functionController;
     private final FunctionInputMenu functionInputMenu;
-    private final CartesianPlane cartesianPlane;
+    private final BetterCartesianPlane cartesianPlane;
 
     private JFXButton show;
     private Popup functionTextPopup;
@@ -25,7 +25,7 @@ public class Plotter extends StackPane {
     public Plotter(IFunctionManager functionController, double xLow, double xHi, double yLow, double yHi) {
         this.functionController = functionController;
         functionInputMenu = new FunctionInputMenu(functionController);
-        cartesianPlane = new CartesianPlane(functionController, xLow, xHi, yLow, yHi);
+        cartesianPlane = new BetterCartesianPlane(functionController, xLow, xHi, yLow, yHi);
 
         init();
 
