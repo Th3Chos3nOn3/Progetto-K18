@@ -21,6 +21,7 @@ public class CartesianPlane extends Pane implements IObserver {
     private static final double STD_TICK_DENSITY = 10;
     private static final int CHECK_THRESHOLD = 10;
     private static final double MAX_ANGLE = Math.atan(Double.MIN_VALUE);
+    private static final int ZEROS__AND_EXTREMA_SPLITS = 5;
 
     private final IFunctionManager<BigDecimal> functionManager;
 
@@ -111,6 +112,35 @@ public class CartesianPlane extends Pane implements IObserver {
         for (IMathFunction<BigDecimal> f : functionManager.getFunctions()) {
 
             if (f != null) {
+
+                Double[][] zerosAndExtrema = findZerosAndExtrema(f, xAxis.getLowerBound(), xAxis.getUpperBound());
+
+                // plot zeros
+                for (int i = 0; i < zerosAndExtrema.length; i++) {
+
+                    if (zerosAndExtrema[0][i] != null) {
+                        plotPoint(zerosAndExtrema[0][i], 0, Color.GRAY);
+                    }
+
+                }
+
+                // plot min if present
+                if (zerosAndExtrema[1][0] != null) {
+                    plotPoint(
+                            zerosAndExtrema[1][0],
+                            filter.eval(f, BigDecimal.valueOf(zerosAndExtrema[1][0])).doubleValue(),
+                            Color.BLUE
+                    );
+                }
+
+                // plot max if present
+                if (zerosAndExtrema[2][0] != null) {
+                    plotPoint(
+                            zerosAndExtrema[2][0],
+                            filter.eval(f, BigDecimal.valueOf(zerosAndExtrema[2][0])).doubleValue(),
+                            Color.GREEN
+                    );
+                }
 
                 double previousX = xAxis.getLowerBound();
 
@@ -283,6 +313,72 @@ public class CartesianPlane extends Pane implements IObserver {
 
         }
 
+    }
+
+    private Double[][] findZerosAndExtrema(IMathFunction<BigDecimal> f, double a, double b) {
+
+        double[] split = splitSegment(a, b, ZEROS__AND_EXTREMA_SPLITS);
+
+        Double[][] matrix = new Double[3][split.length - 1];
+
+        Double dMin = null;
+        Double dMax = null;
+
+        for (int i = 0; i < split.length - 1; i++) {
+
+            BigDecimal zero = filter.zero(f, BigDecimal.valueOf(split[i]), BigDecimal.valueOf(split[i + 1]));
+            BigDecimal min = filter.min(f, BigDecimal.valueOf(split[i]), BigDecimal.valueOf(split[i + 1]));
+            BigDecimal max = filter.max(f, BigDecimal.valueOf(split[i]), BigDecimal.valueOf(split[i + 1]));
+
+            if (zero != null) {
+                matrix[0][i] = zero.doubleValue();
+            }
+
+            if (min != null) {
+
+                double foundMin = min.doubleValue();
+
+                if (dMin == null) {
+
+                    dMin = foundMin;
+
+                } else {
+
+                    if (foundMin < dMin) {
+                        dMin = foundMin;
+                    }
+
+                }
+            }
+
+            if (max != null) {
+
+                double foundMax = max.doubleValue();
+
+                if (dMax == null) {
+
+                    dMax = foundMax;
+
+                } else {
+
+                    if (foundMax > dMax) {
+                        dMax = foundMax;
+                    }
+
+                }
+            }
+
+        }
+
+        if (dMin != null) {
+            matrix[1][0] = dMin;
+        }
+
+        if (dMax != null) {
+            matrix[2][0] = dMax;
+        }
+
+        return matrix;
     }
 
 }
