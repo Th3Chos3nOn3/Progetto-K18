@@ -9,11 +9,11 @@ import java.math.BigDecimal;
 
 public class Main {
 
-    private static final Logger logger = LogManager.getLogger(BetterParser.class);
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
 
-        final String f = "x^2+1^x*sin(x)";
+        final String f = "(2^2^(x-2)^sin(x)^2+sqrt(3))^sin(3*x^2)";
 
         try {
             MathFunction function = new MathFunction(f);

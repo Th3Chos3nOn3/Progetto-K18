@@ -13,37 +13,42 @@ public class Sanitizer {
 
     private static final Pattern BEGINNING_ENCLOSED_CONSTANT = Pattern.compile("^\\((\\d+(\\.\\d+)?)\\)");
 
+    /**
+     * Sanitizes the user input: removes blank spaces and redundant brackets, adds 0 when implied.
+     *
+     * @param function literal representation of user input
+     * @return sanitized version of input
+     */
+    public static String simplify(String function) {
+        function = SPACE.matcher(function).replaceAll("");
 
-    public static String simplify(String input) {
-        input = SPACE.matcher(input).replaceAll("");
-
-        char first = input.charAt(0);
+        char first = function.charAt(0);
 
         if (first == '+') {
-            input = input.substring(1);
+            function = function.substring(1);
         } else if (first == '-') {
-            input = 0 + input;
+            function = 0 + function;
         }
 
-        input = BRACE_PLUS.matcher(input).replaceAll("(");
-        input = BRACE_MINUS.matcher(input).replaceAll("(0-");
+        function = BRACE_PLUS.matcher(function).replaceAll("(");
+        function = BRACE_MINUS.matcher(function).replaceAll("(0-");
 
-        Matcher x = ENCLOSED_X.matcher(input);
+        Matcher x = ENCLOSED_X.matcher(function);
 
         while (x.find()) {
-            input = x.replaceAll("$1x");
-            x = ENCLOSED_X.matcher(input);
+            function = x.replaceAll("$1x");
+            x = ENCLOSED_X.matcher(function);
         }
 
-        Matcher constant = ENCLOSED_CONSTANT.matcher(input);
+        Matcher constant = ENCLOSED_CONSTANT.matcher(function);
 
         while (constant.find()) {
-            input = constant.replaceAll("$1$2");
-            constant = ENCLOSED_CONSTANT.matcher(input);
+            function = constant.replaceAll("$1$2");
+            constant = ENCLOSED_CONSTANT.matcher(function);
         }
 
-        input = BEGINNING_ENCLOSED_CONSTANT.matcher(input).replaceAll("$1");
+        function = BEGINNING_ENCLOSED_CONSTANT.matcher(function).replaceAll("$1");
 
-        return input;
+        return function;
     }
 }
