@@ -12,7 +12,7 @@ import static eu.newton.Main.k;
 
 public final class MathFunction implements IMathFunction<BigDecimal> {
 
-    private static final Logger logger = LogManager.getLogger(BetterParser.class);
+    private static final Logger logger = LogManager.getLogger(FunctionParser.class);
 
     private static final double RETARDED_H = 0.0000000001;
     private static final int SAMPLING_FACTOR = 25;
@@ -21,7 +21,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
     private final Function<BigDecimal, BigDecimal> f;
 
     public MathFunction(String function) throws ScriptException {
-        this.f = new BetterParser().parse(function);
+        this.f = new FunctionParser().parse(function);
         this.function = function;
     }
 
