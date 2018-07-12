@@ -4,6 +4,7 @@ import eu.newton.IMathFunction;
 import eu.newton.api.IDifferentiable;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Must be implemented in order to manage functions through GUI
@@ -18,12 +19,16 @@ public interface IFunctionManager<T> extends IObservable {
      */
     boolean add(int index, String function);
 
+    boolean addDerivative(int index, int order);
+
     /**
      * Remove the function associated with the given index
      * @param index the index associated with the function
      * @return  if the remove operation was successful or not
      */
     boolean remove(int index);
+
+    boolean removeDerivative(int index);
 
     /**
      * Clear the functions to be managed
@@ -35,4 +40,6 @@ public interface IFunctionManager<T> extends IObservable {
      * @return  all managed functions
      */
     Collection<IMathFunction<T>> getFunctions();
+
+    Map<IMathFunction<T>, Integer> getDerivativeFunctions();
 }

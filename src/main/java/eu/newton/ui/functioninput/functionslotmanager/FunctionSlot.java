@@ -23,6 +23,9 @@ class FunctionSlot extends HBox {
 
         this.index = index;
 
+        derivativeButton = new DerivativeButton(functionSlotManager, index);
+
+
         init();
 
         functionInput.setOnMouseClicked(e -> selectedSlotTextProperty.bind(functionInput.textProperty()));
@@ -69,8 +72,6 @@ class FunctionSlot extends HBox {
 
         functionInput = new JFXTextField("");
         functionInput.getStyleClass().add("functionInput");
-
-        derivativeButton = new DerivativeButton();
 
         delete = new JFXButton("X");
         delete.getStyleClass().add("delete");

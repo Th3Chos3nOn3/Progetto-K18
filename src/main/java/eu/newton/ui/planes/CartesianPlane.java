@@ -142,59 +142,131 @@ public class CartesianPlane extends Pane implements IObserver {
                     );
                 }
 
-                double previousX = xAxis.getLowerBound();
-
-                BigDecimal res0 = filter.eval(f, BigDecimal.valueOf(previousX));
-
-                while (previousX < xAxis.getUpperBound() && res0 == null) {
-
-                    previousX += step;
-                    res0 = filter.eval(f, BigDecimal.valueOf(previousX));
-                }
-
-                if (res0 == null) {
-                    continue;
-                }
-
-                double previousY = res0.doubleValue();
-
-                for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
-
-                    BigDecimal res1 = filter.eval(f, BigDecimal.valueOf(x));
-
-                    if (res1 == null) {
-                        continue;
-                    }
-
-                    double y1 = res1.doubleValue();
-
-                    if (!isVertical(previousX, previousY, x, y1)) {
-
-                        plotSegment(previousX, previousY, x, y1, Color.RED);
-
-                    } else {
-
-                        for (int i = 0; i < CHECK_THRESHOLD; i++) {
-                            double[] midPoints = splitSegment(previousX, x, i + 2);
-
-                            if (!isVertical(f, midPoints)) {
-                                 // Probably not a discontinuity
-                                plotFunction(f, midPoints, Color.RED);
-                                break;
-                            }
-
-                             // May be a discontinuity! Don't plotFunction the segment
-                        }
-                    }
-
-                    previousX = x;
-                    previousY = y1;
-                }
+                plot(f, step);
 
             }
 
         }
 
+        java.util.Map<IMathFunction<BigDecimal>, Integer> functions = functionManager.getDerivativeFunctions();
+
+        for (IMathFunction<BigDecimal> f : functions.keySet()) {
+
+            if (f != null) {
+
+                plotDerivative(f, functions.get(f), step);
+            }
+        }
+
+    }
+
+    private void plot(IMathFunction<BigDecimal> f, double step) {
+
+        double previousX = xAxis.getLowerBound();
+
+        BigDecimal res0 = filter.eval(f, BigDecimal.valueOf(previousX));
+
+        while (previousX < xAxis.getUpperBound() && res0 == null) {
+
+            previousX += step;
+            res0 = filter.eval(f, BigDecimal.valueOf(previousX));
+        }
+
+        if (res0 == null) {
+            return;
+        }
+
+        double previousY = res0.doubleValue();
+
+        for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
+
+            BigDecimal res1 = filter.eval(f, BigDecimal.valueOf(x));
+
+            if (res1 == null) {
+                continue;
+            }
+
+            double y1 = res1.doubleValue();
+
+            if (!isVertical(previousX, previousY, x, y1)) {
+
+                plotSegment(previousX, previousY, x, y1, Color.RED);
+
+            } else {
+
+                for (int i = 0; i < CHECK_THRESHOLD; i++) {
+                    double[] midPoints = splitSegment(previousX, x, i + 2);
+
+                    if (!isVertical(f, midPoints)) {
+                        // Probably not a discontinuity
+                        plot(f, midPoints, Color.RED);
+                        break;
+                    }
+
+                    // May be a discontinuity! Don't plot the segment
+                }
+            }
+
+            previousX = x;
+            previousY = y1;
+        }
+
+    }
+
+    private void plotDerivative(IMathFunction<BigDecimal> f, int grade, double step) {
+
+        if (grade <= 0) {
+            return;
+        }
+
+        double previousX = xAxis.getLowerBound();
+
+        BigDecimal res0 = filter.differ(f, BigDecimal.valueOf(previousX), grade);
+
+        while (previousX < xAxis.getUpperBound() && res0 == null) {
+
+            previousX += step;
+            res0 = filter.differ(f, BigDecimal.valueOf(previousX), grade);
+        }
+
+        if (res0 == null) {
+            return;
+        }
+
+        double previousY = res0.doubleValue();
+
+        for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
+
+            BigDecimal res1 = filter.differ(f, BigDecimal.valueOf(x), grade);
+
+            if (res1 == null) {
+                continue;
+            }
+
+            double y1 = res1.doubleValue();
+
+            if (!isVertical(previousX, previousY, x, y1)) {
+
+                plotSegment(previousX, previousY, x, y1, Color.VIOLET);
+
+            } else {
+
+                for (int i = 0; i < CHECK_THRESHOLD; i++) {
+                    double[] midPoints = splitSegment(previousX, x, i + 2);
+
+                    if (!isVertical(f, midPoints)) {
+                        // Probably not a discontinuity
+                        plotDerivative(f, grade, midPoints, Color.RED);
+                        break;
+                    }
+
+                    // May be a discontinuity! Don't plot the segment
+                }
+            }
+
+            previousX = x;
+            previousY = y1;
+        }
     }
 
     private double[] splitSegment(double x0, double x1, int splits) {
@@ -218,20 +290,47 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param points    points to be filter.eval()d by f
      * @param color function's color
      */
-    private void plotFunction(IMathFunction<BigDecimal> f, double[] points, Color color) {
+    private void plot(IMathFunction<BigDecimal> f, double[] points, Color color) {
 
         if (points.length < 2) {
             throw new AssertionError("At least 2 points");
         }
 
         for (int i = 0; i < points.length - 1; i++) {
-            plotSegment(
-                    points[i],
-                    filter.eval(f, BigDecimal.valueOf(points[i])).doubleValue(),
-                    points[i + 1], filter.eval(f, BigDecimal.valueOf(points[i + 1])).doubleValue(),
-                    color);
+
+            double x0 = points[i];
+            BigDecimal y0 = filter.eval(f, BigDecimal.valueOf(points[i]));
+            double x1 = points[i + 1];
+            BigDecimal y1 = filter.eval(f, BigDecimal.valueOf(points[i + 1]));
+
+            if (y0 != null && y1 != null) {
+
+                plotSegment(x0, y0.doubleValue(), x1, y1.doubleValue(), color);
+            }
+
         }
 
+    }
+
+    private void plotDerivative(IMathFunction<BigDecimal> f, int grade, double[] points, Color color) {
+
+        if (points.length < 2) {
+            throw new AssertionError("At least 2 points");
+        }
+
+        for (int i = 0; i < points.length - 1; i++) {
+
+            double x0 = points[i];
+            BigDecimal y0 = filter.differ(f, BigDecimal.valueOf(points[i]), grade);
+            double x1 = points[i + 1];
+            BigDecimal y1 = filter.differ(f, BigDecimal.valueOf(points[i + 1]), grade);
+
+            if (y0 != null && y1 != null) {
+
+                plotSegment(x0, y0.doubleValue(), x1, y1.doubleValue(), color);
+            }
+
+        }
     }
 
     /**

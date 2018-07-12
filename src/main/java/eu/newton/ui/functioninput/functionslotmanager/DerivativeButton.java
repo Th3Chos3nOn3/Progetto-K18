@@ -6,13 +6,19 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 class DerivativeButton extends HBox {
+
+    private int index;
+
     private int derivativeOrder;
+
     private JFXButton increment, decrement;
     private JFXButton computeDerivative;
     private Label indexLabel;
 
-    DerivativeButton() {
+    DerivativeButton(FunctionSlotManager functionSlotManager, int index) {
         init();
+
+        this.index = index;
 
         increment.setOnAction(e -> {
             if (derivativeOrder < 99) {
@@ -21,13 +27,16 @@ class DerivativeButton extends HBox {
         });
 
         decrement.setOnAction(e -> {
-            if (derivativeOrder > 1) {
+            if (derivativeOrder >= 1) {
                 indexLabel.setText(String.valueOf(--derivativeOrder));
             }
         });
 
-        // TODO: to be implemented
-        computeDerivative.setOnAction(e -> {});
+        computeDerivative.setOnAction(e -> {
+
+            functionSlotManager.getFunctionManager().addDerivative(index, derivativeOrder);
+
+        });
 
     }
 
@@ -40,7 +49,7 @@ class DerivativeButton extends HBox {
     }
 
     private void init() {
-        derivativeOrder = 1;
+        derivativeOrder = 0;
 
         increment = new JFXButton("▴");
 

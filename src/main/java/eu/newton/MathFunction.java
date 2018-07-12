@@ -15,7 +15,7 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
     private static final Logger logger = LogManager.getLogger(FunctionParser.class);
 
     private static final double RETARDED_H = 0.0000000001;
-    private static final int SAMPLING_FACTOR = 25;
+    private static final int SAMPLING_FACTOR = 50;
 
     private final String function;
     private final Function<BigDecimal, BigDecimal> f;
@@ -204,7 +204,13 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
     public static void main(String[] args) throws ScriptException {
 
-        // Plz test me!
+        /*
+        MathFunction sin = new MathFunction("sin(x)");
+
+        BigDecimal x = BigDecimal.ONE;
+
+        System.err.println("f''(" + x + ") = " + sin.differentiate(x, 2));
+        */
 
     }
 }
