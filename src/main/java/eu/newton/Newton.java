@@ -15,6 +15,7 @@ public class Newton extends Application {
         Scene scene = new Scene(root, 1280, 720);
 
         primaryStage.setTitle("Plotter");
+        primaryStage.setResizable(false);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

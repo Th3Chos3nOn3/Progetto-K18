@@ -1,28 +1,28 @@
 package eu.newton.ui.planes.helpers;
 
+import javafx.geometry.Point2D;
+
 public final class DragManager {
 
-    private double anchorX, anchorY;
-    private double dragX, dragY;
+    private Point2D anchor;
+    private Point2D point;
 
     public DragManager() {
     }
 
-    public void setAnchor(double x, double y) {
-        anchorX = x;
-        anchorY = y;
+    public void setAnchor(Point2D anchor) {
+        this.anchor = anchor;
     }
 
-    public void setDrag(double x, double y) {
-        dragX = x;
-        dragY = y;
+    public void setPoint(Point2D point) {
+        this.point = point;
     }
 
     public double moveX() {
-        return dragX - anchorX;
+        return anchor.getX() - point.getX();
     }
 
     public double moveY() {
-        return dragY - anchorY;
+        return anchor.getY() - point.getY();
     }
 }

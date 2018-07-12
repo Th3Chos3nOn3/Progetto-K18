@@ -3,14 +3,12 @@ package eu.newton.ui.planes;
 import eu.newton.IMathFunction;
 import eu.newton.ui.functionmanager.IFunctionManager;
 import eu.newton.ui.functionmanager.IObserver;
-import eu.newton.ui.planes.helpers.DragManager;
+import eu.newton.ui.planes.helpers.Map;
+import eu.newton.ui.planes.helpers.MathExceptionFilter;
 import javafx.geometry.Side;
-import javafx.scene.Group;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
 
 import java.math.BigDecimal;
 
@@ -24,13 +22,9 @@ public class CartesianPlane extends Pane implements IObserver {
     private static final int CHECK_THRESHOLD = 10;
     private static final double MAX_ANGLE = Math.atan(Double.MIN_VALUE);
 
-    private static final double DRAG_MOVE_FACTOR = .5;
-    private static final double ZOOM_FACTOR = 0.01;
-    private static double MIN_AXIS_WIDTH = 0.08;
-
     private final IFunctionManager<BigDecimal> functionManager;
 
-    private Group sheet;
+    private final Map map;
 
     private final NumberAxis xAxis;
     private final NumberAxis yAxis;
@@ -38,8 +32,7 @@ public class CartesianPlane extends Pane implements IObserver {
     private double axisTickDensity;
     private int pointDensity;
 
-    private final DragManager planeDragManager;
-    private final DragManager paneDragManager;
+    private final MathExceptionFilter<BigDecimal> filter;
 
     public CartesianPlane(IFunctionManager<BigDecimal> functionManager, double xLow, double xHi, double yLow, double yHi) {
         this(functionManager, xLow, xHi, yLow, yHi, STD_TICK_DENSITY, STD_POINT_DENSITY);
@@ -62,8 +55,6 @@ public class CartesianPlane extends Pane implements IObserver {
         this.functionManager = functionManager;
         functionManager.addObserver(this);
 
-        sheet = new Group();
-
         this.axisTickDensity = axisTickDensity;
         this.pointDensity = pointsDensity;
 
@@ -79,79 +70,13 @@ public class CartesianPlane extends Pane implements IObserver {
         yAxis.layoutXProperty().bind(widthProperty().divide(2));
         yAxis.prefHeightProperty().bind(heightProperty());
 
-        planeDragManager = new DragManager();
-        paneDragManager = new DragManager();
+        map = new Map(xAxis, yAxis);
+        map.prefWidthProperty().bind(this.widthProperty());
+        map.prefHeightProperty().bind(this.heightProperty());
 
-        getChildren().addAll(xAxis, yAxis, sheet);
+        filter = new MathExceptionFilter<>();
 
-        // TODO: fix tickMarks warning
-        // TODO: implement zoom
-        // TODO: fix zoom coordinates mapping (can't be fixed setting the scale of the sheet itself)
-        setOnScroll(scroll -> {
-
-            double zoomSign = Math.signum(scroll.getDeltaY());
-
-            // Avoid swapping lower and upper bound error
-            if ((computeDistance(xAxis.getLowerBound(), xAxis.getUpperBound()) <= MIN_AXIS_WIDTH ||
-                    computeDistance(yAxis.getLowerBound(), yAxis.getUpperBound()) <= MIN_AXIS_WIDTH) && zoomSign > 0) {
-
-                return;
-            }
-
-            double centerX = mapToCartesianX(scroll.getX());
-            double centerY = mapToCartesianY(scroll.getY());
-
-            double leftIncrement = computeDistance(xAxis.getLowerBound(), centerX) * ZOOM_FACTOR * zoomSign;
-            double rightIncrement = computeDistance(centerX, xAxis.getUpperBound()) * ZOOM_FACTOR * zoomSign;
-            double bottomIncrement = computeDistance(yAxis.getLowerBound(), centerY) * ZOOM_FACTOR * zoomSign;
-            double topIncrement = computeDistance(centerY, yAxis.getUpperBound()) * ZOOM_FACTOR * zoomSign;
-
-            xAxis.setLowerBound(xAxis.getLowerBound() + leftIncrement);
-            xAxis.setUpperBound(xAxis.getUpperBound() - rightIncrement);
-            yAxis.setLowerBound(yAxis.getLowerBound() + bottomIncrement);
-            yAxis.setUpperBound(yAxis.getUpperBound() - topIncrement);
-
-            sheetRefresh();
-
-        });
-
-        setOnMousePressed(click -> {
-
-            System.err.println(mapToCartesianX(click.getX()) + " " + mapToCartesianY(click.getY()));
-
-            planeDragManager.setAnchor(mapToCartesianX(click.getX()), mapToCartesianY(click.getY()));
-            paneDragManager.setAnchor(click.getX(), click.getY());
-
-            setOnMouseDragged(drag -> {
-
-                double dragX = drag.getX();
-                double dragY = drag.getY();
-
-                planeDragManager.setDrag(mapToCartesianX(dragX), mapToCartesianY(dragY));
-                paneDragManager.setDrag(dragX, dragY);
-
-                double planeMoveX = planeDragManager.moveX() * DRAG_MOVE_FACTOR;
-                double planeMoveY = planeDragManager.moveY() * DRAG_MOVE_FACTOR;
-
-                xAxis.setLowerBound(xAxis.getLowerBound() - planeMoveX);
-                xAxis.setUpperBound(xAxis.getUpperBound() - planeMoveX);
-                yAxis.setLowerBound(yAxis.getLowerBound() - planeMoveY);
-                yAxis.setUpperBound(yAxis.getUpperBound() - planeMoveY);
-
-                double paneMoveX = paneDragManager.moveX() * DRAG_MOVE_FACTOR;
-                double paneMoveY = paneDragManager.moveY() * DRAG_MOVE_FACTOR;
-
-                // LOL, I have to move the sheet
-                sheet.setTranslateX(sheet.getTranslateX() + paneMoveX);
-                sheet.setTranslateY(sheet.getTranslateY() + paneMoveY);
-
-                sheetRefresh();
-
-                planeDragManager.setAnchor(mapToCartesianX(dragX), mapToCartesianY(dragY));
-                paneDragManager.setAnchor(dragX, dragY);
-            });
-
-        });
+        getChildren().addAll(map);
 
     }
 
@@ -172,7 +97,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param y y-plane coordinate
      */
     public void plotPoint(double x, double y, Color color) {
-        sheet.getChildren().add(new Circle(mapToPaneX(x), mapToPaneY(y), 4, color));
+        map.plotPoint(x, y, color);
     }
 
 
@@ -188,12 +113,35 @@ public class CartesianPlane extends Pane implements IObserver {
             if (f != null) {
 
                 double previousX = xAxis.getLowerBound();
-                double previousY = f.evaluate(BigDecimal.valueOf(previousX)).doubleValue();
+
+                BigDecimal res0 = filter.eval(f, BigDecimal.valueOf(previousX));
+
+                while (previousX < xAxis.getUpperBound() && res0 == null) {
+
+                    previousX += step;
+                    res0 = filter.eval(f, BigDecimal.valueOf(previousX));
+                }
+
+                if (res0 == null) {
+                    continue;
+                }
+
+                double previousY = res0.doubleValue();
 
                 for (double x = previousX + step; x <= xAxis.getUpperBound(); x += step) {
-                    double y1 = f.evaluate(BigDecimal.valueOf(x)).doubleValue();
+
+                    BigDecimal res1 = filter.eval(f, BigDecimal.valueOf(x));
+
+                    if (res1 == null) {
+                        continue;
+                    }
+
+                    double y1 = res1.doubleValue();
+
                     if (!isVertical(previousX, previousY, x, y1)) {
+
                         plotSegment(previousX, previousY, x, y1, Color.RED);
+
                     } else {
 
                         for (int i = 0; i < CHECK_THRESHOLD; i++) {
@@ -201,11 +149,11 @@ public class CartesianPlane extends Pane implements IObserver {
 
                             if (!isVertical(f, midPoints)) {
                                  // Probably not a discontinuity
-                                plotFunctions(f, midPoints, Color.RED);
+                                plotFunction(f, midPoints, Color.RED);
                                 break;
                             }
 
-                             // May be a discontinuity! Don't plotFunctions the segment
+                             // May be a discontinuity! Don't plotFunction the segment
                         }
                     }
 
@@ -237,10 +185,11 @@ public class CartesianPlane extends Pane implements IObserver {
     /**
      * Plot a math function f given an array of points
      * @param f math function to be plotted
-     * @param points    points to be evaluated by f
+     * @param points    points to be filter.eval()d by f
      * @param color function's color
      */
-    private void plotFunctions(IMathFunction<BigDecimal> f, double[] points, Color color) {
+    private void plotFunction(IMathFunction<BigDecimal> f, double[] points, Color color) {
+
         if (points.length < 2) {
             throw new AssertionError("At least 2 points");
         }
@@ -248,8 +197,8 @@ public class CartesianPlane extends Pane implements IObserver {
         for (int i = 0; i < points.length - 1; i++) {
             plotSegment(
                     points[i],
-                    f.evaluate(BigDecimal.valueOf(points[i])).doubleValue(),
-                    points[i + 1], f.evaluate(BigDecimal.valueOf(points[i + 1])).doubleValue(),
+                    filter.eval(f, BigDecimal.valueOf(points[i])).doubleValue(),
+                    points[i + 1], filter.eval(f, BigDecimal.valueOf(points[i + 1])).doubleValue(),
                     color);
         }
 
@@ -264,10 +213,7 @@ public class CartesianPlane extends Pane implements IObserver {
      * @param color segment's color
      */
     private void plotSegment(double x0, double y0, double x1, double y1, Color color) {
-        Line line = new Line(mapToPaneX(x0), mapToPaneY(y0), mapToPaneX(x1), mapToPaneY(y1));
-        line.setStrokeWidth(2);
-        line.setStroke(color);
-        sheet.getChildren().add(line);
+        map.plotSegment(x0, y0, x1, y1, color);
     }
 
     /**
@@ -295,15 +241,15 @@ public class CartesianPlane extends Pane implements IObserver {
      * Determine if a given math function may be considered vertical
      * on a given set of points
      * @param f math function
-     * @param points    points to be evaluated by f
+     * @param points    points to be filter.eval()d by f
      * @return  true if it is vertical
      */
     private boolean isVertical(IMathFunction<BigDecimal> f, double[] points) {
         double prevX = points[0];
-        double prevY = f.evaluate(BigDecimal.valueOf(prevX)).doubleValue();
+        double prevY = filter.eval(f, BigDecimal.valueOf(prevX)).doubleValue();
 
         for (int i = 1; i < points.length; i++) {
-            if (isVertical(prevX, prevY, points[i], f.evaluate(BigDecimal.valueOf(points[i])).doubleValue())) {
+            if (isVertical(prevX, prevY, points[i], filter.eval(f, BigDecimal.valueOf(points[i])).doubleValue())) {
                 return true;
             }
 
@@ -314,58 +260,10 @@ public class CartesianPlane extends Pane implements IObserver {
     }
 
     /**
-     * Map a x-plane coordinate to a x-pane coordinate
-     * @param cartesianX    x-plane coordinate
-     * @return  x-pane coordinates
-     */
-    private double mapToPaneX(double cartesianX) {
-        double convertedX = cartesianX / getAxisRange(xAxis) * getWidth();
-
-        return convertedX + getWidth() / 2;
-    }
-
-    /**
-     * Map a y-plane coordinate to a y-pane coordinate
-     * @param cartesianY    y-plane coordinate
-     * @return  y-pane coordinates
-     */
-    private double mapToPaneY(double cartesianY) {
-        double convertedY = - (cartesianY / getAxisRange(yAxis) * getHeight());
-
-        return convertedY + getHeight() / 2;
-    }
-
-    /**
-     * Map a x-pane coordinate to a x-plane coordinate
-     * @param paneX x-pane coordinate
-     * @return  x-plane coordinate
-     */
-    private double mapToCartesianX(double paneX) {
-        double centeredX = paneX - getWidth() / 2;
-
-        return centeredX / getWidth() * getAxisRange(xAxis);
-    }
-
-    /**
-     * Map a y-pane coordinate to a y-plane coordinate
-     * @param paneY y-pane coordinate
-     * @return  y-plane coordinate
-     */
-    private double mapToCartesianY(double paneY) {
-        double centeredY = - (paneY - getHeight() / 2);
-
-        return centeredY / getHeight() * getAxisRange(yAxis);
-    }
-
-    private double getAxisRange(NumberAxis axis) {
-        return axis.getUpperBound() - axis.getLowerBound();
-    }
-
-    /**
      * Refresh the math function graph drawing canvas
      */
     private void sheetRefresh() {
-        sheet.getChildren().clear();
+        map.refresh();
         plot();
     }
 
