@@ -256,7 +256,7 @@ public class CartesianPlane extends Pane implements IObserver {
 
                     if (!isVertical(f, midPoints)) {
                         // Probably not a discontinuity
-                        plotDerivative(f, grade, midPoints, Color.RED);
+                        plotDerivative(f, grade, midPoints, Color.VIOLET);
                         break;
                     }
 

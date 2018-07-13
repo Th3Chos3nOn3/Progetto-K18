@@ -6,15 +6,11 @@ import org.apache.logging.log4j.Logger;
 import javax.script.ScriptException;
 import java.math.BigDecimal;
 import java.util.function.Function;
-import java.util.stream.IntStream;
-
-import static eu.newton.Main.k;
 
 public final class MathFunction implements IMathFunction<BigDecimal> {
 
     private static final Logger logger = LogManager.getLogger(FunctionParser.class);
 
-    private static final double RETARDED_H = 0.0000000001;
     private static final int SAMPLING_FACTOR = 50;
 
     private final String function;
@@ -32,47 +28,22 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
     @Override
     public BigDecimal differentiate(BigDecimal x, int grade) {
-        final BigDecimal h = BigDecimal.valueOf(RETARDED_H).negate();
-        final BigDecimal[] sum = {BigDecimal.ZERO};
 
-        IntStream.rangeClosed(0, grade).forEachOrdered(k -> {
-            int nfact = IntStream.rangeClosed(1, grade).reduce(1, (x1, y) -> x1 * y);
-            int kfact = IntStream.rangeClosed(1, k).reduce(1, (x1, y) -> x1 * y);
-            int nkfact = IntStream.rangeClosed(1, grade-k).reduce(1, (x1, y) -> x1 * y);
+        // TODO: plz find a suitable proportional rule
+        double h = 1 / (Math.sqrt(grade) / Math.log(grade + 1));
 
-            double coeffb = nfact / (nfact * nkfact);
+        double coeff = 1 / Math.pow(h, grade);
+        double tmp = 0;
 
-            logger.trace("k = {}", k);
-            logger.trace("Nfact = {}", nfact);
-            logger.trace("Kfact = {}", kfact);
-            logger.trace("NKfact = {}", nkfact);
-            logger.trace("Coeff = {}", coeffb);
-
-
-            logger.trace("Coeff = {}", this);
-
-            BigDecimal xh = evaluate(x.add(k(k).multiply(h))).stripTrailingZeros();
-            logger.trace("x + kh = {}", xh);
-
-            BigDecimal result = xh.multiply(k(coeffb)).stripTrailingZeros();
-            if (k % 2 == 0) {
-                result = result.negate();
-            }
-            logger.trace("Result = {}", result);
-
-
-            sum[0] = sum[0].add(result);
-            logger.trace("sum = {}", sum[0]);
-
-        });
-
-        if (grade % 2 == 0) { //TODO plz fix me I need help
-            sum[0] = sum[0].negate();
+        for (int k = 0; k <= grade; k++) {
+            tmp += coeff * ((k % 2 == 0) ? 1 : -1) * binomialCoefficient(grade, k).doubleValue() * evaluate(x.add(BigDecimal.valueOf(k * h))).doubleValue();
         }
-        logger.trace(sum[0]);
 
+        if (grade % 2 != 0) {
+            tmp *= -1;
+        }
 
-        return sum[0].divide(h.pow(grade), BigDecimal.ROUND_CEILING).setScale(6, BigDecimal.ROUND_CEILING).stripTrailingZeros();
+        return BigDecimal.valueOf(tmp);
     }
 
     @Override
@@ -202,15 +173,31 @@ public final class MathFunction implements IMathFunction<BigDecimal> {
 
     }
 
+    private static BigDecimal binomialCoefficient(int n, int k) {
+
+        return factorial(n).divide((factorial(k).multiply(factorial(n - k))));
+    }
+
+    private static BigDecimal factorial(int a) {
+        BigDecimal result = BigDecimal.ONE;
+
+        for (int i = 2; i <= a; i++) {
+            result = result.multiply(BigDecimal.valueOf(i));
+        }
+
+        return result;
+    }
+
     public static void main(String[] args) throws ScriptException {
 
-        /*
+
         MathFunction sin = new MathFunction("sin(x)");
 
         BigDecimal x = BigDecimal.ONE;
 
-        System.err.println("f''(" + x + ") = " + sin.differentiate(x, 2));
-        */
+        System.err.println("f'(" + x + ") = " + sin.differentiate(x, 2));
+
+        System.err.println(factorial(21));
 
     }
 }
